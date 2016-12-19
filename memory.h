@@ -1,3 +1,5 @@
+#pragma once
+
 // typedef struct {
 // 	uint8_t todo[0x1FE0];     // 0x4020 - 0x6000   todo: what is this used for?
 // 	uint8_t work_ram[0x1FFF]; // 0x6000 - 0x7FFF
@@ -21,5 +23,5 @@
 // const int PRG_ROM_UPPER_BANK_LOWER_LIMIT = 0xC000;
 // const int PRG_ROM_LOWER_BANK_UPPER_LIMIT = 
 
-const int PRG_ROM_UPPER_LIMIT = 0x10000;
-const int PRG_ROM_LOWER_LIMIT = 0x8000;
+extern const int PRG_ROM_UPPER_LIMIT;
+extern const int PRG_ROM_LOWER_LIMIT;

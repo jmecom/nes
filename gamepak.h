@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct {
 	uint8_t prg_rom_banks;
 	uint8_t chr_rom_banks;

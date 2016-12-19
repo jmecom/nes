@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall
-TEST_OBJS = test.o gamepak.o cpu.o
+TEST_OBJS = test.o gamepak.o instructions.o memory.o error.o cpu.o 
 
 default: test
 
@@ -12,6 +12,15 @@ test.o: test.c
 
 gamepak.o: gamepak.c
 	$(CC) $(CFLAGS) -c gamepak.c
+
+instructions.o: instructions.c
+	$(CC) $(CFLAGS) -c instructions.c
+
+memory.o: memory.c
+	$(CC) $(CFLAGS) -c memory.c
+
+error.o: error.c
+	$(CC) $(CFLAGS) -c error.c
 
 cpu.o: cpu.c
 	$(CC) $(CFLAGS) -c cpu.c

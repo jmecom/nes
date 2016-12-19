@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "instructions.h"
-#include "memory.h"
 #include "gamepak.h"
 #include "macros.h"
 #include "constants.h"

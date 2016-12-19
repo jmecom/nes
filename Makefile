@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall
-TEST_OBJS = test.o gamepak.o instructions.o memory.o error.o cpu.o 
+TEST_OBJS = test.o gamepak.o memory.o instructions.o macros.o cpu.o 
 
 default: test
 
@@ -13,17 +13,20 @@ test.o: test.c
 gamepak.o: gamepak.c
 	$(CC) $(CFLAGS) -c gamepak.c
 
-instructions.o: instructions.c
-	$(CC) $(CFLAGS) -c instructions.c
-
 memory.o: memory.c
 	$(CC) $(CFLAGS) -c memory.c
 
-error.o: error.c
-	$(CC) $(CFLAGS) -c error.c
+instructions.o: instructions.c
+	$(CC) $(CFLAGS) -c instructions.c
+
+constants.o: constants.c
+	$(CC) $(CFLAGS) -c constants.c
+
+macros.o: macros.c
+	$(CC) $(CFLAGS) -c macros.c
 
 cpu.o: cpu.c
 	$(CC) $(CFLAGS) -c cpu.c
 	
 clean: 
-	$(RM) nes_test *.o *~
+	$(RM) nes_test *.o out.log *~

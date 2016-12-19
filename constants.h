@@ -1,0 +1,12 @@
+/* Addressing modes */
+#define IMMEDIATE 1
+#define ABSOLUTE 2
+#define ZERO_PAGE_ABSOLUTE 3
+#define IMPLIED 4
+#define ACCUMULATOR 5
+#define INDEXED 6
+#define ZERO_PAGE_INDEXED 7
+#define INDIRECT 8
+#define PRE_INDEXED_INDIRECT 9
+#define POST_INDEXED_INDIRECT 10
+#define RELATIVE 11

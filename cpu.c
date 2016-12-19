@@ -50,6 +50,8 @@ void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 	} else {
 		ERROR("Invalid opcode");
 	}
+
+	// instructions[opcode]()
 }
 
 void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
@@ -58,6 +60,12 @@ void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 	fp = fopen(my_log_path, "w+");
 	fprintf(fp, "%X  %X %X %X", PC, opcode, arg1, arg2);
 	// todo: logging to out.log
+	// the annoying thing is printing the function name
+	//     having function pointers would simplify this probably
+	//	     - have a lookup table of functions indexed by opcode
+	//       - function names in upper case
+	//       - the complication is: how to cleanly pass the mode to the function?
+	
 	// todo: also would be nice if out.log printed upon program completion
 	fclose(fp);
 }

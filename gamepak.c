@@ -13,7 +13,7 @@ const int TRAINER_LEN = 512;
 const int PRG_ROM_BANK_LEN = 16384;
 const int CHR_ROM_BANK_LEN = 8192;
 
-int load(char* fpath, gamepak_t* gamepak) {
+int load(const char* fpath, gamepak_t* gamepak) {
 	FILE *f;
     f = fopen(fpath, "r");
     

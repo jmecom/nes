@@ -10,19 +10,20 @@
 #include "constants.h"
 
 /* Temporary constants for testing */
-char* nestest_path = "test_files/nestest.nes";
-char* my_log_path = "./out.log";
+const char* NESTEST_PATH = "test_files/nestest.nes";
+const char* LOG_PATH = "out.log";
 
 /* Registers */
 uint16_t PC = 0xC000; // Program counter
-uint8_t S = 0xFD;     // Stack pointer
+uint8_t SP = 0xFD;    // Stack pointer
 uint8_t P = 0x24;     // Processor status
 uint8_t A = 0;        // Accumulator
 uint8_t X = 0;        // Index register X
 uint8_t Y = 0;        // Index register Y
 
-/* Internal CPU state */
-uint32_t CYC = 0;          // Cycle counter
+/* State */
+uint32_t CYC = 0;     // Cycle counter
+uint32_t SL = 241;    // Scanline -- todo
 
 /* Memory */
 gamepak_t gamepak = {0};
@@ -55,18 +56,15 @@ void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 }
 
 void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
-	FILE *fp;
+	FILE *fp = fopen(LOG_PATH, "w+");
 
-	fp = fopen(my_log_path, "w+");
-	fprintf(fp, "%X  %X %X %X", PC, opcode, arg1, arg2);
-	// todo: logging to out.log
-	// the annoying thing is printing the function name
-	//     having function pointers would simplify this probably
-	//	     - have a lookup table of functions indexed by opcode
-	//       - function names in upper case
-	//       - the complication is: how to cleanly pass the mode to the function?
+	// todo: pretty print the opcodes and arguments (like nestest.log)
+	//       - would be easiest with a LUT of function pointers (function names in all-caps)
+	//       - if i do this, how should I cleanly pass the mode to the function?
+	char* str = "%02X  %02X %02X %02X       %02X                       A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
+	fprintf(fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
+	printf(     str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
 	
-	// todo: also would be nice if out.log printed upon program completion
 	fclose(fp);
 }
 
@@ -75,19 +73,21 @@ void run() {
 	uint8_t arg1 = fetch(PC + 1);
 	uint8_t arg2 = fetch(PC + 2);
 
-	execute(opcode, arg1, arg2);
 	log_state(opcode, arg1, arg2);
+	execute(opcode, arg1, arg2);
 }
 
 int init() {
 	int res = 0;
 
 	// todo: use ERROR for error handling in gamepak handler code
-	if ((res = load(nestest_path, &gamepak)) != 0) {
+	if ((res = load(NESTEST_PATH, &gamepak)) != 0) {
 		ERROR("Failed to load file");
 	}
 
 	run(gamepak);
+
+
 
 	return 0;
 }

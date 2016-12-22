@@ -17,7 +17,7 @@ typedef struct {
 	uint8_t* chr_rom;
 } gamepak_t;
 
-int load(char* fpath, gamepak_t* gamepak);
+int load(const char* fpath, gamepak_t* gamepak);
 int parse_header(uint8_t* hdr, header_data_t* data_out);
 
 void print_header_data_t(header_data_t header_data);

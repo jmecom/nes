@@ -44,15 +44,29 @@ uint8_t fetch(uint16_t idx) {
 }
 
 void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
-	if (opcode == 0x4C) {
-		jmp(ABSOLUTE, arg1, arg2);
-	} else if (opcode == 0x6C) {
-		jmp(INDIRECT, arg1, arg2);
-	} else {
-		ERROR("Invalid opcode");
+	switch (opcode) {
+		// JMP
+		case 0x4C:
+			jmp(ABSOLUTE, arg1, arg2);
+			break;
+		case 0x6C:
+			jmp(IMMEDIATE, arg1, arg2);
+			break;
+		// LDX
+		case 0xA2:
+			ldx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
+			break;
+		case 0xA6:
+			break;
+		case 0xB6:
+			break;
+		case 0xAE:
+			break;
+		case 0xBE:
+			break;
+		default:
+			ERROR("Invalid opcode");
 	}
-
-	// instructions[opcode]()
 }
 
 void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
@@ -63,7 +77,7 @@ void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 	//       - if i do this, how should I cleanly pass the mode to the function?
 	char* str = "%02X  %02X %02X %02X       %02X                       A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
 	fprintf(fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
-	printf(     str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
+	printf(str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
 	
 	fclose(fp);
 }
@@ -80,15 +94,13 @@ void run() {
 int init() {
 	int res = 0;
 
-	// todo: use ERROR for error handling in gamepak handler code
+	// todo: use ERROR for error handling in gamepak handler code?
 	if ((res = load(NESTEST_PATH, &gamepak)) != 0) {
 		ERROR("Failed to load file");
 	}
 
 	run(gamepak);
 
-
-
-	return 0;
+ 	return res;
 }
 

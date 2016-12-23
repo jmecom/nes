@@ -26,4 +26,4 @@ cpu.o: cpu.c
 	$(CC) $(CFLAGS) -c cpu.c
 	
 clean: 
-	$(RM) nes_test *.o out.log *~
+	$(RM) nes_test *.o out.log tags *~

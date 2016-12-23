@@ -26,20 +26,16 @@ uint32_t CYC = 0;     // Cycle counter
 uint32_t SL = 241;    // Scanline -- todo
 
 /* Memory */
-gamepak_t gamepak = {0};
+gamepak_t gamepak;
 
 uint8_t fetch(uint16_t idx) {
-	if (idx > PRG_ROM_UPPER_LIMIT || idx < 0) {
-		/* Out of valid memory range */
-		ERROR("Out of valid memory range");
-	} else if (idx < PRG_ROM_UPPER_LIMIT && idx > PRG_ROM_LOWER_LIMIT) {
+	if (idx > PRG_ROM_LOWER_LIMIT) {
 		/* PC in PRG-ROM */
 
 		// gamepak.prg_rom starts at 0 in code, but is indexed starting at 
 		// 0x8000 in the memory map; so offset it.
 		return gamepak.prg_rom[idx - 0x8000];
 	} 
-
 	ERROR("Couldn't fetch from memory");
 }
 
@@ -75,7 +71,9 @@ void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 	// todo: pretty print the opcodes and arguments (like nestest.log)
 	//       - would be easiest with a LUT of function pointers (function names in all-caps)
 	//       - if i do this, how should I cleanly pass the mode to the function?
-	char* str = "%02X  %02X %02X %02X       %02X                       A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
+	char* str = "%02X  %02X %02X %02X       %02X                      \
+	A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
+
 	fprintf(fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
 	printf(str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
 	
@@ -99,7 +97,7 @@ int init() {
 		ERROR("Failed to load file");
 	}
 
-	run(gamepak);
+	run();
 
  	return res;
 }

@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "error.h"
 #include "gamepak.h"
 
 const char* HDR_MAGIC = "NES\x1a";

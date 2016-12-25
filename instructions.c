@@ -7,6 +7,8 @@
 #include "instructions.h"
 
 /* CPU state defined in cpu.c */
+extern uint8_t X;
+extern uint8_t P;
 extern uint16_t PC;
 extern uint32_t CYC;
 
@@ -29,4 +31,24 @@ void jmp(uint8_t mode, uint8_t arg1, uint8_t arg2) {
 }
 
 void ldx(uint8_t mode, uint8_t arg1, uint8_t arg2) {
+	SET_SIGN(arg1); // todo, how should these work in this case?
+	SET_ZERO(arg1);
+	PC += 2;
+
+	switch (mode) {
+		case IMMEDIATE:
+			X = arg1;
+			CYC += 2;
+			break;
+		case ZERO_PAGE_ABSOLUTE:
+			X = fetch(COMBINE(0, arg1));
+			CYC += 3;
+			break;
+		case ABSOLUTE:
+			X = fetch(COMBINE(arg1, arg2));
+			CYC += 4;
+			break;
+        default:
+			ERROR("Invalid mode");
+	}
 }

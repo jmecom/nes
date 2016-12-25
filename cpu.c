@@ -10,8 +10,9 @@
 #include "constants.h"
 
 /* Temporary constants for testing */
-const char* NESTEST_PATH = "test_files/nestest.nes";
-const char* LOG_PATH = "out.log";
+const char *NESTEST_PATH = "test_files/nestest.nes";
+const char *LOG_PATH = "out.log";
+FILE *log_fp;
 
 /* Registers */
 uint16_t PC = 0xC000; // Program counter
@@ -50,15 +51,21 @@ void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
             break;
         // LDX
         case 0xA2:
-            ldx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
+            ldx(IMMEDIATE, arg1, arg2);
             break;
         case 0xA6:
+            ldx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
             break;
         case 0xB6:
+            ldx(ZERO_PAGE_INDEXED, arg1, arg2);
             break;
         case 0xAE:
+            ldx(ABSOLUTE, arg1, arg2);
             break;
         case 0xBE:
+            // todo: https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
+            // I think this is absolute indexed
+            ldx(INDEXED, arg1, arg2);
             break;
         default:
             ERROR("Invalid opcode");
@@ -66,27 +73,27 @@ void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
 }
 
 void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
-    FILE *fp = fopen(LOG_PATH, "w+");
-
     // todo: pretty print the opcodes and arguments (like nestest.log)
     //       - would be easiest with a LUT of function pointers (function names in all-caps)
     //       - if i do this, how should I cleanly pass the mode to the function?
     char* str = "%02X  %02X %02X %02X       %02X                   \
     A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
 
-    fprintf(fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
-    printf(str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC, SL);
-    
-    fclose(fp);
+    // todo see: https://forums.nesdev.com/viewtopic.php?f=3&t=10193
+    // note: cyc rolls over when SL updates -- since its ppu
+    fprintf(log_fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
+    printf(str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
 }
 
 void run() {
-    uint8_t opcode = fetch(PC);
-    uint8_t arg1 = fetch(PC + 1);
-    uint8_t arg2 = fetch(PC + 2);
+    while (true) {
+        uint8_t opcode = fetch(PC);
+        uint8_t arg1 = fetch(PC + 1);
+        uint8_t arg2 = fetch(PC + 2); // todo: this isnt always grabbed
 
-    log_state(opcode, arg1, arg2);
-    execute(opcode, arg1, arg2);
+        log_state(opcode, arg1, arg2);
+        execute(opcode, arg1, arg2);
+    }
 }
 
 int init() {
@@ -97,8 +104,10 @@ int init() {
         ERROR("Failed to load file");
     }
 
+    log_fp = fopen(LOG_PATH, "w+");
     run();
+    fclose(log_fp);
 
-     return res;
+    return res;
 }
 

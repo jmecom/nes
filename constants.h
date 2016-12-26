@@ -1,3 +1,7 @@
+#pragma once 
+
+#include <stdint.h>
+
 /* Addressing modes */
 #define IMMEDIATE 1
 #define ABSOLUTE 2
@@ -14,3 +18,9 @@
 /* Memory */
 #define PRG_ROM_UPPER_LIMIT 0x10000
 #define PRG_ROM_LOWER_LIMIT 0x8000
+
+/* Lookup tables */
+const uint8_t instr_bytes[256];
+const uint8_t instr_cycles[256];
+const uint8_t instr_page_cycles[256];
+const char* instr_names[256];

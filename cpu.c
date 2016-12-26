@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 
+#include "cpu.h"
 #include "instructions.h"
 #include "gamepak.h"
 #include "macros.h"
@@ -40,7 +42,21 @@ uint8_t fetch(uint16_t idx) {
     ERROR("Couldn't fetch from memory");
 }
 
-void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
+void execute(uint8_t opcode) {
+    uint8_t num_args = instr_bytes[opcode] - 1;
+    uint8_t arg1 = 0, arg2 = 0;
+
+    arg1 = fetch(PC + 1);
+
+    if (num_args == 1) {
+        log_state(opcode, num_args, arg1);
+    } else if (num_args == 2) {
+        arg2 = fetch(PC + 2);
+        log_state(opcode, num_args, arg1, arg2);
+    } else {
+        ERROR("Invalid number of arguments for instruction")
+    }
+
     switch (opcode) {
         // JMP
         case 0x4C:
@@ -70,29 +86,47 @@ void execute(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
         default:
             ERROR("Invalid opcode");
     }
+
+    CYC += instr_cycles[opcode];
+    // todo: handle page crossing
 }
 
-void log_state(uint8_t opcode, uint8_t arg1, uint8_t arg2) {
-    // todo: pretty print the opcodes and arguments (like nestest.log)
-    //       - would be easiest with a LUT of function pointers (function names in all-caps)
-    //       - if i do this, how should I cleanly pass the mode to the function?
-    char* str = "%02X  %02X %02X %02X       %02X                   \
-    A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:  %d SL:%d\n";
+void log_state(uint8_t opcode, uint8_t num_args, ...) {
+    va_list ap;
+    va_start(ap, num_args);
 
-    // todo see: https://forums.nesdev.com/viewtopic.php?f=3&t=10193
-    // note: cyc rolls over when SL updates -- since its ppu
-    fprintf(log_fp, str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
-    printf(str, PC, opcode, arg1, arg2, COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
+    if (num_args == 1) {
+        char* str = "%02X  %02X %02X     %s  %02X                 \
+        A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
+
+        uint8_t arg1 = va_arg(ap, int); // implicit type conversion
+
+        // Multiply by 3 because nestest.log logs PPU cycles
+        fprintf(log_fp, str, PC, opcode, arg1, \
+        instr_names[opcode], arg1, A, X, Y, P, SP, CYC*3, SL);
+
+        printf(str, PC, opcode, arg1, \
+        instr_names[opcode], arg1, A, X, Y, P, SP, CYC*3, SL);
+    } else if (num_args == 2) {
+        char* str = "%02X  %02X %02X %02X  %s  %02X               \
+        A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
+
+        uint8_t arg1 = va_arg(ap, int);
+        uint8_t arg2 = va_arg(ap, int);
+
+        fprintf(log_fp, str, PC, opcode, arg1, arg2, \
+        instr_names[opcode], COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
+
+        printf(str, PC, opcode, arg1, arg2, \
+        instr_names[opcode], COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
+    }
+
+    va_end(ap);
 }
 
 void run() {
     while (true) {
-        uint8_t opcode = fetch(PC);
-        uint8_t arg1 = fetch(PC + 1);
-        uint8_t arg2 = fetch(PC + 2); // todo: this isnt always grabbed
-
-        log_state(opcode, arg1, arg2);
-        execute(opcode, arg1, arg2);
+        execute(fetch(PC));
     }
 }
 
@@ -107,6 +141,10 @@ int init() {
     log_fp = fopen(LOG_PATH, "w+");
     run();
     fclose(log_fp);
+
+    free(gamepak.trainer);
+    free(gamepak.prg_rom);
+    free(gamepak.chr_rom);
 
     return res;
 }

@@ -19,11 +19,9 @@ void jmp(uint8_t mode, uint8_t arg1, uint8_t arg2) {
     switch (mode) {
         case ABSOLUTE:
             PC = COMBINE(arg1, arg2);
-            CYC += 3;
             break;
         case INDIRECT:
             PC = fetch(COMBINE(arg1, arg2));
-            CYC += 9;
             break;
         default:
             ERROR("Invalid mode");
@@ -31,22 +29,19 @@ void jmp(uint8_t mode, uint8_t arg1, uint8_t arg2) {
 }
 
 void ldx(uint8_t mode, uint8_t arg1, uint8_t arg2) {
-	SET_SIGN(arg1); // todo, how should these work in this case?
+	SET_SIGN(arg1); // todo, how should these work in this case? (WRT arg1, arg2...)
 	SET_ZERO(arg1);
 	PC += 2;
 
 	switch (mode) {
 		case IMMEDIATE:
 			X = arg1;
-			CYC += 2;
 			break;
 		case ZERO_PAGE_ABSOLUTE:
 			X = fetch(COMBINE(0, arg1));
-			CYC += 3;
 			break;
 		case ABSOLUTE:
 			X = fetch(COMBINE(arg1, arg2));
-			CYC += 4;
 			break;
         default:
 			ERROR("Invalid mode");

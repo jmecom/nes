@@ -1,25 +1,37 @@
-import sys 
+""" Compares NES emulator output log to known correct log """
 
-def compare(a, b, fro, to, radix):
-    if int(a[fro:to], radix) != int(b[fro:to], radix):
-        print("Logs differ\n %s\n %s" % (a, b))
+import sys
+
+NESTEST_LOG = open("test_files/nestest.log", "r").readlines()
+OUT_LOG = open("out.log", "r").readlines()
+RANGES = [(0, 4), (6, 8), (10, 12), (12, 14), (50, 52), (55, 57), (60, 62),
+          (65, 67), (71, 73), (78, 81), (86, 89)]
+RADICES = [16, 16, 16, 16, 16, 16, 16, 16, 16, 10, 10]
+NUM_TO_COMPARE = len(RANGES)
+
+def check_exists(line, start, end):
+    """ Check if a number exists at line[start:end] """
+    try:
+        int(line[start:end])
+        return True
+    except ValueError:
+        return False
+
+def compare(line1, line2, start, end, radix):
+    """ Compare integer values line1 and line2 at range [start, end] for a given radix  """
+    if int(line1[start:end], radix) != int(line2[start:end], radix):
+        print "Logs differ\n    nestest.log: %s    out.log:     %s" % (line1, line2)
         sys.exit(1)
 
-# Compare the two logs, line by line
-with open("test_files/nestest.log", "r") as golden_log:
-    with open("out.log", "r") as my_log:
-        for a in golden_log:
-            for b in my_log:
-                compare(a, b, 0, 4,   16) # pc
-                compare(a, b, 6, 8,   16) # opcode
-                compare(a, b, 10, 12, 16) # arg1
-                compare(a, b, 12, 14, 16) # arg2
-                compare(a, b, 50, 52, 16) # a
-                compare(a, b, 55, 57, 16) # x
-                compare(a, b, 60, 62, 16) # y
-                compare(a, b, 65, 67, 16) # p
-                compare(a, b, 71, 73, 16) # sp
-                compare(a, b, 78, 81, 10) # cyc
-                compare(a, b, 86, 89, 10) # sl
+def main():
+    """ Compare output log to golden log, line by line """
+    for i in xrange(len(OUT_LOG)):
+        for j in xrange(NUM_TO_COMPARE):
+            start = RANGES[j][0]
+            end = RANGES[j][1]
+            if check_exists(NESTEST_LOG[i], start, end):
+                compare(NESTEST_LOG[i], OUT_LOG[i], start, end, RADICES[j])
+    print "No differences found so far. Good job!"
 
-print("No differences found. Good job!")
+if __name__ == '__main__':
+    main()

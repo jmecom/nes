@@ -8,6 +8,8 @@
     
 /* Combine two 8-bit values to one **little-endian** 16-bit value. */
 #define COMBINE(a, b) (uint16_t) ((b << 8) | a)
+#define SET_BIT(x, n) (x |= (1 << n))
+#define CLR_BIT(x, n) (x &= ~(1 << n))
 
 /* Status register
    7   6   5   4   3   2   1   0
@@ -17,9 +19,6 @@
 #define CHECK_ZERO(src) (src == 0)
 #define CHECK_SIGN(src) !!(src << 7)
 
-#define SET_BIT(x,n) (x |= (1 << n))
-#define CLR_BIT(x,n) (x &= ~(1 << n))
-
 // todo: use XOR here instead for bonus points?
-#define SET_ZERO(src) CHECK_ZERO(src) ? SET_BIT(P, 1) : CLR_BIT(P, 1)
-#define SET_SIGN(src) CHECK_SIGN(src) ? SET_BIT(P, 7) : CLR_BIT(P, 7)
+#define SET_ZERO(src) (CHECK_ZERO(src) ? SET_BIT(P, 1) : CLR_BIT(P, 1))
+#define SET_SIGN(src) (CHECK_SIGN(src) ? SET_BIT(P, 7) : CLR_BIT(P, 7))

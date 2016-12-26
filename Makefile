@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -Wextra -Werror -std=c99
 TEST_OBJS = test.o gamepak.o constants.o instructions.o macros.o cpu.o 
 
 default: test

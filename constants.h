@@ -18,6 +18,8 @@
 /* Memory */
 #define PRG_ROM_UPPER_LIMIT 0x10000
 #define PRG_ROM_LOWER_LIMIT 0x8000
+#define RAM_UPPER_LIMIT 0x2000
+#define RAM_LOWER_LIMIT 0x0
 
 /* Lookup tables */
 const uint8_t instr_bytes[256];

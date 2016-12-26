@@ -30,28 +30,38 @@ uint32_t SL = 241;    // Scanline -- todo
 
 /* Memory */
 gamepak_t gamepak;
+uint8_t ram[RAM_UPPER_LIMIT - RAM_LOWER_LIMIT];
 
-uint8_t fetch(uint16_t idx) {
+uint8_t read(uint16_t idx) {
     if (idx > PRG_ROM_LOWER_LIMIT) {
-        /* PC in PRG-ROM */
+        /* idx in PRG-ROM */
 
         // gamepak.prg_rom starts at 0 in code, but is indexed starting at 
         // 0x8000 in the memory map; so offset it.
         return gamepak.prg_rom[idx - 0x8000];
-    } 
-    ERROR("Couldn't fetch from memory");
+    } else {
+        ERROR("Couldn't fetch from memory");
+    }
+}
+
+void write(uint16_t idx, uint8_t val) {
+    if (idx < RAM_UPPER_LIMIT) {
+        ram[idx] = val;
+    } else {
+        ERROR("Couldn't write to memory");
+    }
 }
 
 void execute(uint8_t opcode) {
     uint8_t num_args = instr_bytes[opcode] - 1;
     uint8_t arg1 = 0, arg2 = 0;
 
-    arg1 = fetch(PC + 1);
+    arg1 = read(PC + 1);
 
     if (num_args == 1) {
         log_state(opcode, num_args, arg1);
     } else if (num_args == 2) {
-        arg2 = fetch(PC + 2);
+        arg2 = read(PC + 2);
         log_state(opcode, num_args, arg1, arg2);
     } else {
         ERROR("Invalid number of arguments for instruction")
@@ -82,6 +92,16 @@ void execute(uint8_t opcode) {
             // todo: https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
             // I think this is absolute indexed
             ldx(INDEXED, arg1, arg2);
+            break;
+        // STX
+        case 0x86:
+            stx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
+            break;
+        case 0x96:
+            stx(ZERO_PAGE_INDEXED, arg1, arg2);
+            break;
+        case 0x8E:
+            stx(ABSOLUTE, arg1, arg2);
             break;
         default:
             ERROR("Invalid opcode");
@@ -126,7 +146,7 @@ void log_state(uint8_t opcode, uint8_t num_args, ...) {
 
 void run() {
     while (true) {
-        execute(fetch(PC));
+        execute(read(PC));
     }
 }
 
@@ -137,6 +157,8 @@ int init() {
     if ((res = load(NESTEST_PATH, &gamepak)) != 0) {
         ERROR("Failed to load file");
     }
+
+    memset(ram, 0, sizeof(ram));
 
     log_fp = fopen(LOG_PATH, "w+");
     run();

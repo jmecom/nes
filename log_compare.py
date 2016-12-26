@@ -4,8 +4,10 @@ import sys
 
 NESTEST_LOG = open("test_files/nestest.log", "r").readlines()
 OUT_LOG = open("out.log", "r").readlines()
+# Ranges to compare on each line (e.g. ranges for opcode, args, registers, ...).
 RANGES = [(0, 4), (6, 8), (10, 12), (12, 14), (50, 52), (55, 57), (60, 62),
           (65, 67), (71, 73), (78, 81), (86, 89)]
+# Radices to convert from. All but CYC and SL are base 16.
 RADICES = [16, 16, 16, 16, 16, 16, 16, 16, 16, 10, 10]
 NUM_TO_COMPARE = len(RANGES)
 

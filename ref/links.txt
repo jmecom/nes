@@ -4,6 +4,7 @@ https://forums.nesdev.com/viewtopic.php?f=3&t=10193
 
 Addressing modes -- zero page 
 https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
+http://www.thealmightyguru.com/Games/Hacking/Wiki/index.php/Addressing_Modes
 
 ISA reference
 http://obelisk.me.uk/6502/reference.html

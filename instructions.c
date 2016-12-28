@@ -15,7 +15,7 @@ extern uint32_t CYC;
 
 /* Functions defined in cpu.c */
 extern uint8_t read(uint16_t idx);
-void write(uint16_t idx, uint8_t val);
+extern void write(uint16_t idx, uint8_t val);
 
 void jmp(uint8_t mode, uint8_t arg1, uint8_t arg2) {
     switch (mode) {

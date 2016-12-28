@@ -30,7 +30,7 @@ uint32_t SL = 241;    // Scanline -- todo
 
 /* Memory */
 gamepak_t gamepak;
-uint8_t ram[RAM_UPPER_LIMIT - RAM_LOWER_LIMIT];
+uint8_t ram[RAM_SIZE];
 
 uint8_t read(uint16_t idx) {
     if (idx > PRG_ROM_LOWER_LIMIT) {
@@ -38,18 +38,32 @@ uint8_t read(uint16_t idx) {
 
         // gamepak.prg_rom starts at 0 in code, but is indexed starting at 
         // 0x8000 in the memory map; so offset it.
-        return gamepak.prg_rom[idx - 0x8000];
+        return gamepak.prg_rom[idx - PRG_ROM_LOWER_LIMIT];
+    } else if (idx < RAM_MIRROR_UPPER_LIMIT) {
+        /* idx in RAM or RAM mirror */
+        return ram[idx % RAM_SIZE]; // modulus handles mirroring
     } else {
         ERROR("Couldn't fetch from memory");
     }
 }
 
 void write(uint16_t idx, uint8_t val) {
-    if (idx < RAM_UPPER_LIMIT) {
-        ram[idx] = val;
+    if (idx < RAM_MIRROR_UPPER_LIMIT) {
+        ram[idx % RAM_SIZE] = val;
     } else {
         ERROR("Couldn't write to memory");
     }
+}
+
+void stack_push(uint8_t val) {
+    write(SP, val);
+    SP--;
+}
+
+uint8_t stack_pop() {
+    uint8_t val = read(SP);
+    SP++;
+    return val;
 }
 
 void execute(uint8_t opcode) {
@@ -90,7 +104,7 @@ void execute(uint8_t opcode) {
             break;
         case 0xBE:
             // todo: https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
-            // I think this is absolute indexed
+            // I think this is `absolute indexed`
             ldx(INDEXED, arg1, arg2);
             break;
         // STX
@@ -103,6 +117,8 @@ void execute(uint8_t opcode) {
         case 0x8E:
             stx(ABSOLUTE, arg1, arg2);
             break;
+        // JSR 
+        // case 
         default:
             ERROR("Invalid opcode");
     }
@@ -155,19 +171,18 @@ int init() {
 
     // todo: use ERROR for error handling in gamepak handler code?
     if ((res = load(NESTEST_PATH, &gamepak)) != 0) {
-        ERROR("Failed to load file");
+        ERROR("Failed to load gamepak");
     }
 
     memset(ram, 0, sizeof(ram));
-
     log_fp = fopen(LOG_PATH, "w+");
-    run();
-    fclose(log_fp);
 
+    run();
+
+    fclose(log_fp);
     free(gamepak.trainer);
     free(gamepak.prg_rom);
     free(gamepak.chr_rom);
 
     return res;
 }
-

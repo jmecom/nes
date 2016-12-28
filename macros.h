@@ -43,3 +43,7 @@
 
 #define CARRY_SET() (CHK_BIT(P, 0))
 #define ZERO_SET() (CHK_BIT(P, 1))
+#define OVERFLOW_SET() (CHK_BIT(P, 6))
+
+/* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
+#define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6);

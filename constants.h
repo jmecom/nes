@@ -27,5 +27,16 @@
 /* Lookup tables */
 const uint8_t instr_bytes[256];
 const uint8_t instr_cycles[256];
+const uint8_t instr_ppu_cycles[256];
 const uint8_t instr_page_cycles[256];
 const char* instr_names[256];
+
+/* PPU */
+
+// "CYC actually represents PPU dots, and the PPU outputs three dots for each 
+// CPU cycle (unless you're emulating a PAL NES, in which case it outputs an extra dot 
+// every fifth CPU cycle). For example, LDA absolute takes four cycles according to your 6502 
+// book, but it takes 12 CYC according to a Nintendulator execution log. As sub_par pointed out,
+// SL refers to scanlines, and each SL is worth 341 CYC."
+// https://forums.nesdev.com/viewtopic.php?f=3&t=10266
+#define SL_RESET 341

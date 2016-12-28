@@ -140,7 +140,7 @@ void execute(uint8_t opcode) {
             PC += instr_bytes[opcode];
             if (CARRY_SET()) {
                 uint16_t rel = PC + arg1;
-                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                BRANCH_CYCLE_INCREMENT(rel);
                 PC = rel; 
             }
             break;
@@ -149,7 +149,7 @@ void execute(uint8_t opcode) {
             PC += instr_bytes[opcode];
             if (!CARRY_SET()) {
                 uint16_t rel = PC + arg1;
-                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                BRANCH_CYCLE_INCREMENT(rel);
                 PC = rel; 
             }
             break;
@@ -170,7 +170,7 @@ void execute(uint8_t opcode) {
             PC += instr_bytes[opcode];
             if (ZERO_SET()) {
                 uint16_t rel = PC + arg1;
-                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                BRANCH_CYCLE_INCREMENT(rel);
                 PC = rel; 
             }
             break;
@@ -179,7 +179,7 @@ void execute(uint8_t opcode) {
             PC += instr_bytes[opcode];
             if (!ZERO_SET()) {
                 uint16_t rel = PC + arg1;
-                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                BRANCH_CYCLE_INCREMENT(rel);
                 PC = rel; 
             }
             break;
@@ -196,13 +196,35 @@ void execute(uint8_t opcode) {
             uint8_t m = read(COMBINE(0, arg1));
             SET_SIGN(m);
             SET_ZERO((m & A));
-            SET_OVERFLOW(m); // copy 6th bit
+            SET_OVERFLOW(m);
+            break;
+        // BVS
+        case 0x70:
+            PC += instr_bytes[opcode];
+            if (OVERFLOW_SET()) {
+                uint16_t rel = PC + arg1;
+                BRANCH_CYCLE_INCREMENT(rel);
+                PC = rel; 
+            }
+            break;
+        // BVC
+        case 0x50:
+            PC += instr_bytes[opcode];
+            if (!OVERFLOW_SET()) {
+                uint16_t rel = PC + arg1;
+                BRANCH_CYCLE_INCREMENT(rel);
+                PC = rel; 
+            }
             break;
         default:
             ERROR("Invalid opcode");
     }
 
-    CYC += instr_cycles[opcode];
+    CYC += instr_ppu_cycles[opcode];
+    if (CYC >= SL_RESET) { // todo: >= or > ?
+        CYC = CYC % SL_RESET;
+        SL++;
+    }
 }
 
 void run() {

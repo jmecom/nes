@@ -7,7 +7,6 @@
 
 #include "cpu.h"
 #include "logging.h"
-#include "instructions.h"
 #include "gamepak.h"
 #include "macros.h"
 #include "constants.h"
@@ -82,54 +81,125 @@ void execute(uint8_t opcode) {
     
     switch (opcode) {
         // JMP
-        case 0x4C:
-            jmp(ABSOLUTE, arg1, arg2);
+        case 0x4C: // absolute
+            PC = COMBINE(arg1, arg2);
             break;
-        case 0x6C:
-            jmp(IMMEDIATE, arg1, arg2);
+        case 0x6C: // indirect
+            PC = read(COMBINE(arg1, arg2));
             break;
         // LDX
-        case 0xA2:
-            ldx(IMMEDIATE, arg1, arg2);
+        case 0xA2: // immediate 
+            PC += instr_bytes[opcode];
+            X = arg1;
+			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
+			SET_ZERO(arg1);
             break;
-        case 0xA6:
-            ldx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
+        case 0xA6: // zero-page absolute
+            ERROR("Not yet implemented");
             break;
-        case 0xB6:
-            ldx(ZERO_PAGE_INDEXED, arg1, arg2);
+        case 0xB6: // zero-page indexed
+            ERROR("Not yet implemented");
             break;
         case 0xAE:
-            ldx(ABSOLUTE, arg1, arg2);
+            ERROR("Not yet implemented");
             break;
         case 0xBE:
             // todo: https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
             // I think this is `absolute indexed`
-            ldx(INDEXED, arg1, arg2);
+            ERROR("Not yet implemented");
             break;
         // STX
-        case 0x86:
-            stx(ZERO_PAGE_ABSOLUTE, arg1, arg2);
+        case 0x86: // zero-page absolute
+            PC += instr_bytes[opcode];
+            write(COMBINE(0, arg1), X);
             break;
         case 0x96:
-            stx(ZERO_PAGE_INDEXED, arg1, arg2);
+            ERROR("Not yet implemented");
             break;
         case 0x8E:
-            stx(ABSOLUTE, arg1, arg2);
+            ERROR("Not yet implemented");
             break;
         // JSR 
         case 0x20:
-            jsr(ABSOLUTE, arg1, arg2); 
+            PC--;  // JSR pushes address - 1 onto the stack
+            stack_push(UPPER(PC));
+            stack_push(LOWER(PC));
+            PC = COMBINE(arg1, arg2);
             break;
         // NOP 
         case 0xEA:
-            nop();
+            PC += instr_bytes[opcode];
+            break;
+        // SEC
+        case 0x38:
+            PC += instr_bytes[opcode];
+            SET_BIT(P, 0);
+            break;
+        // BCS
+        case 0xB0:
+            PC += instr_bytes[opcode];
+            if (CARRY_SET()) {
+                uint16_t rel = PC + arg1;
+                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                PC = rel; 
+            }
+            break;
+        // BCC
+        case 0x90:
+            PC += instr_bytes[opcode];
+            if (!CARRY_SET()) {
+                uint16_t rel = PC + arg1;
+                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                PC = rel; 
+            }
+            break;
+        // CLC
+        case 0x18:
+            PC += instr_bytes[opcode];
+            CLR_BIT(P, 0);
+            break;
+        // LDA
+        case 0xA9: // immediate 
+            PC += instr_bytes[opcode];
+            A = arg1;
+			SET_SIGN(arg1);
+			SET_ZERO(arg1);
+            break;
+        // BEQ
+        case 0xF0:
+            PC += instr_bytes[opcode];
+            if (ZERO_SET()) {
+                uint16_t rel = PC + arg1;
+                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                PC = rel; 
+            }
+            break;
+        // BNE
+        case 0xD0:
+            PC += instr_bytes[opcode];
+            if (!ZERO_SET()) {
+                uint16_t rel = PC + arg1;
+                CYC += UPPER(PC) == UPPER(rel) ? 1 : 2;
+                PC = rel; 
+            }
+            break;
+        // STA
+        case 0x85: // zero-page absolute
+            PC += instr_bytes[opcode];
+            A = read(COMBINE(0, arg1));
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        // BIT
+        case 0x24: // zero-page absolute 
+            // uint8_t test = A & read(COMBINE(0, arg1));
+            // SET_ZERO(test);
             break;
         default:
             ERROR("Invalid opcode");
     }
 
     CYC += instr_cycles[opcode];
-    // todo: handle page crossing
 }
 
 void run() {

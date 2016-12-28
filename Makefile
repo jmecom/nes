@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall -Wextra -Werror -std=c99
-TEST_OBJS = test.o gamepak.o constants.o instructions.o macros.o cpu.o 
+TEST_OBJS = test.o gamepak.o constants.o instructions.o macros.o logging.o cpu.o 
 
 default: test
 
@@ -21,6 +21,9 @@ constants.o: constants.c
 
 macros.o: macros.c
 	$(CC) $(CFLAGS) -c macros.c
+
+logging.o: logging.c
+	$(CC) $(CFLAGS) -c logging.c
 
 cpu.o: cpu.c
 	$(CC) $(CFLAGS) -c cpu.c

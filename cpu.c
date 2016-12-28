@@ -6,15 +6,11 @@
 #include <stdarg.h>
 
 #include "cpu.h"
+#include "logging.h"
 #include "instructions.h"
 #include "gamepak.h"
 #include "macros.h"
 #include "constants.h"
-
-/* Temporary constants for testing */
-const char *NESTEST_PATH = "test_files/nestest.nes";
-const char *LOG_PATH = "out.log";
-FILE *log_fp;
 
 /* Registers */
 uint16_t PC = 0xC000; // Program counter
@@ -68,19 +64,22 @@ uint8_t stack_pop() {
 
 void execute(uint8_t opcode) {
     uint8_t num_args = instr_bytes[opcode] - 1;
-    uint8_t arg1 = 0, arg2 = 0;
+    uint8_t arg1 = read(PC + 1), arg2 = read(PC + 2);
 
-    arg1 = read(PC + 1);
-
-    if (num_args == 1) {
-        log_state(opcode, num_args, arg1);
-    } else if (num_args == 2) {
-        arg2 = read(PC + 2);
-        log_state(opcode, num_args, arg1, arg2);
-    } else {
-        ERROR("Invalid number of arguments for instruction")
+    switch (num_args) {
+        case 0:
+            log_cpu_state(opcode, num_args);
+            break;
+        case 1:
+            log_cpu_state(opcode, num_args, arg1);
+            break;
+        case 2:
+            log_cpu_state(opcode, num_args, arg1, arg2);
+            break;
+        default:
+            ERROR("Invalid number of arguments for instruction");
     }
-
+    
     switch (opcode) {
         // JMP
         case 0x4C:
@@ -118,46 +117,19 @@ void execute(uint8_t opcode) {
             stx(ABSOLUTE, arg1, arg2);
             break;
         // JSR 
-        // case 
+        case 0x20:
+            jsr(ABSOLUTE, arg1, arg2); 
+            break;
+        // NOP 
+        case 0xEA:
+            nop();
+            break;
         default:
             ERROR("Invalid opcode");
     }
 
     CYC += instr_cycles[opcode];
     // todo: handle page crossing
-}
-
-void log_state(uint8_t opcode, uint8_t num_args, ...) {
-    va_list ap;
-    va_start(ap, num_args);
-
-    if (num_args == 1) {
-        char* str = "%02X  %02X %02X     %s  %02X                 \
-        A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
-
-        uint8_t arg1 = va_arg(ap, int); // implicit type conversion
-
-        // Multiply by 3 because nestest.log logs PPU cycles
-        fprintf(log_fp, str, PC, opcode, arg1, \
-        instr_names[opcode], arg1, A, X, Y, P, SP, CYC*3, SL);
-
-        printf(str, PC, opcode, arg1, \
-        instr_names[opcode], arg1, A, X, Y, P, SP, CYC*3, SL);
-    } else if (num_args == 2) {
-        char* str = "%02X  %02X %02X %02X  %s  %02X               \
-        A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
-
-        uint8_t arg1 = va_arg(ap, int);
-        uint8_t arg2 = va_arg(ap, int);
-
-        fprintf(log_fp, str, PC, opcode, arg1, arg2, \
-        instr_names[opcode], COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
-
-        printf(str, PC, opcode, arg1, arg2, \
-        instr_names[opcode], COMBINE(arg1, arg2), A, X, Y, P, SP, CYC*3, SL);
-    }
-
-    va_end(ap);
 }
 
 void run() {
@@ -170,16 +142,16 @@ int init() {
     int res = 0;
 
     // todo: use ERROR for error handling in gamepak handler code?
-    if ((res = load(NESTEST_PATH, &gamepak)) != 0) {
+    if ((res = load("test_files/nestest.nes", &gamepak)) != 0) {
         ERROR("Failed to load gamepak");
     }
 
     memset(ram, 0, sizeof(ram));
-    log_fp = fopen(LOG_PATH, "w+");
 
+    begin_logging();
     run();
+    end_logging();
 
-    fclose(log_fp);
     free(gamepak.trainer);
     free(gamepak.prg_rom);
     free(gamepak.chr_rom);

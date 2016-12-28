@@ -2,20 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "cpu.h"
 #include "macros.h"
 #include "constants.h"
 #include "instructions.h"
-
-/* CPU state defined in cpu.c */
-extern uint8_t X;
-extern uint8_t Y;
-extern uint8_t P;
-extern uint16_t PC;
-extern uint32_t CYC;
-
-/* Functions defined in cpu.c */
-extern uint8_t read(uint16_t idx);
-extern void write(uint16_t idx, uint8_t val);
 
 void jmp(uint8_t mode, uint8_t arg1, uint8_t arg2) {
     switch (mode) {
@@ -67,6 +57,24 @@ void stx(uint8_t mode, uint8_t arg1, uint8_t arg2) {
 			write(COMBINE(0, arg1), X);
 			break;
 		default:
-			ERROR("Invalid mode")
+			ERROR("Invalid mode");
 	}
+}
+
+void jsr(uint8_t mode, uint8_t arg1, uint8_t arg2) {
+	PC--;  // JSR pushes address - 1 onto the stack
+    stack_push(UPPER(PC));
+    stack_push(LOWER(PC));
+
+	switch (mode) {
+		case ABSOLUTE:
+			PC = COMBINE(arg1, arg2);
+			break;
+		default:
+			ERROR("Invalid mode");
+	}
+}
+
+void nop() {
+	PC += instr_bytes[0xEA];
 }

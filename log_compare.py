@@ -5,14 +5,6 @@ import sys
 NESTEST_LOG = open("test_files/nestest.log", "r").readlines()
 OUT_LOG = open("out.log", "r").readlines()
 
-def check_exists(line, start, end):
-    """ Check if a number exists at line[start:end] """
-    try:
-        int(line[start:end])
-        return True
-    except ValueError:
-        return False
-
 def main():
     """ Compare output log to golden log, line by line """
     for i in xrange(len(OUT_LOG)):

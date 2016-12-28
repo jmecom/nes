@@ -36,10 +36,10 @@
 #define CHECK_SIGN(a) (CHK_BIT(a, 7))
 
 // todo: use XOR here instead for bonus points?
-// todo: rename these perhaps..
+// todo: rename these perhaps..?
 #define SET_ZERO(a) (CHECK_ZERO(a) ? SET_BIT(P, 1) : CLR_BIT(P, 1))
 #define SET_SIGN(a) (CHECK_SIGN(a) ? SET_BIT(P, 7) : CLR_BIT(P, 7))
-#define SET_OVERFLOW(a) 
+#define SET_OVERFLOW(a) (a & 0x40 ? SET_BIT(P, 6) : CLR_BIT(P, 6))
 
 #define CARRY_SET() (CHK_BIT(P, 0))
 #define ZERO_SET() (CHK_BIT(P, 1))

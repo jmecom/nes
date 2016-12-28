@@ -38,7 +38,6 @@ void log_cpu_state(uint8_t opcode, uint8_t num_args, ...) {
 
         uint8_t arg1 = va_arg(ap, int); // implicit type conversion
 
-        // Multiply by 3 because nestest.log logs PPU cycles
         fprintf(log_fp, str, PC, opcode, arg1, \
         instr_names[opcode], arg1, A, X, Y, P, SP, CYC*3, SL);
 

@@ -192,8 +192,11 @@ void execute(uint8_t opcode) {
             break;
         // BIT
         case 0x24: // zero-page absolute 
-            // uint8_t test = A & read(COMBINE(0, arg1));
-            // SET_ZERO(test);
+            PC += instr_bytes[opcode];
+            uint8_t m = read(COMBINE(0, arg1));
+            SET_SIGN(m);
+            SET_ZERO((m & A));
+            SET_OVERFLOW(m); // copy 6th bit
             break;
         default:
             ERROR("Invalid opcode");

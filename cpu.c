@@ -186,7 +186,7 @@ void execute(uint8_t opcode) {
         // STA
         case 0x85: // zero-page absolute
             PC += instr_bytes[opcode];
-            A = read(COMBINE(0, arg1));
+            write(COMBINE(0, arg1), A);
             SET_SIGN(A);
             SET_ZERO(A);
             break;

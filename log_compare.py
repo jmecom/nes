@@ -11,6 +11,7 @@ def main():
         line1 = NESTEST_LOG[i]
         line2 = OUT_LOG[i]
 
+        # Compare lines, but skip over the pretty-printing that my logger hasn't implemented yet
         if line1[0:20] != line2[0:20] or line1[49:88] != line2[49:88]:
             print "Logs differ\n    nestest.log: %s    out.log:     %s" % (line1, line2)
             sys.exit(1)

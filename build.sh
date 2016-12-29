@@ -8,7 +8,7 @@ fi
 echo -e "\n## Running #######"
 ./nes_test
 
-echo -e "\n## Comparing #####"
+echo -e "\n## Comparing #####\n... displaying tail of out.log ..."
 tail out.log
 echo
 python log_compare.py

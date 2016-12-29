@@ -57,8 +57,7 @@ void stack_push(uint8_t val) {
 
 uint8_t stack_pop() {
     SP++;
-    uint8_t val = read(SP + 256);
-    return val;
+    return read(SP + 256);
 }
 
 void execute(uint8_t opcode) {
@@ -304,7 +303,7 @@ void execute(uint8_t opcode) {
         }
         // PLP
         case 0x28: {
-            // PLP and RTI pull from the stack, but ignore bits 4 and 5
+            // PLP and RTI pull P from stack, but ignore bits 4 and 5
             uint8_t m = stack_pop();
             CPY_BIT(P, m, 4);
             CPY_BIT(P, m, 5);
@@ -448,6 +447,19 @@ void execute(uint8_t opcode) {
         // TXS
         case 0x9A: {
             SP = X;
+            break;
+        }
+        // RTI
+        case 0x40: {
+            // PLP and RTI pull P from stack, but ignore bits 4 and 5
+            uint8_t m = stack_pop();
+            CPY_BIT(P, m, 4);
+            CPY_BIT(P, m, 5);
+            P = m;
+
+            uint8_t pc_lower = stack_pop();
+            uint8_t pc_upper = stack_pop();
+            PC = COMBINE(pc_lower, pc_upper);
             break;
         }
         default:

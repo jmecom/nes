@@ -41,9 +41,11 @@
 #define SET_SIGN(a) (CHECK_SIGN(a) ? SET_BIT(P, 7) : CLR_BIT(P, 7))
 #define SET_OVERFLOW(a) (a & 0x40 ? SET_BIT(P, 6) : CLR_BIT(P, 6))
 
+/* Each macro below returns if the respective flag in P is set */
 #define CARRY_SET() (CHK_BIT(P, 0))
 #define ZERO_SET() (CHK_BIT(P, 1))
 #define OVERFLOW_SET() (CHK_BIT(P, 6))
+#define SIGN_SET() (CHK_BIT(P, 7))
 
 /* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
 #define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6);

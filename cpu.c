@@ -56,8 +56,8 @@ void stack_push(uint8_t val) {
 }
 
 uint8_t stack_pop() {
-    uint8_t val = read(SP);
     SP++;
+    uint8_t val = read(SP);
     return val;
 }
 
@@ -81,62 +81,75 @@ void execute(uint8_t opcode) {
     
     switch (opcode) {
         // JMP
-        case 0x4C: // absolute
+        case 0x4C: { // absolute
             PC = COMBINE(arg1, arg2);
             break;
-        case 0x6C: // indirect
+        }
+        case 0x6C: { // indirect
             PC = read(COMBINE(arg1, arg2));
             break;
+        }
         // LDX
-        case 0xA2: // immediate 
+        case 0xA2: { // immediate 
             PC += instr_bytes[opcode];
             X = arg1;
 			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
 			SET_ZERO(arg1);
             break;
-        case 0xA6: // zero-page absolute
+        }
+        case 0xA6: { // zero-page absolute
             ERROR("Not yet implemented");
             break;
-        case 0xB6: // zero-page indexed
+        }
+        case 0xB6: { // zero-page indexed
             ERROR("Not yet implemented");
             break;
-        case 0xAE:
+        }
+        case 0xAE: {
             ERROR("Not yet implemented");
             break;
-        case 0xBE:
+        }
+        case 0xBE: {
             // todo: https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
             // I think this is `absolute indexed`
             ERROR("Not yet implemented");
             break;
+        }
         // STX
-        case 0x86: // zero-page absolute
+        case 0x86: { // zero-page absolute
             PC += instr_bytes[opcode];
             write(COMBINE(0, arg1), X);
             break;
-        case 0x96:
+        }
+        case 0x96: {
             ERROR("Not yet implemented");
             break;
-        case 0x8E:
+        }
+        case 0x8E: {
             ERROR("Not yet implemented");
             break;
+        }
         // JSR 
-        case 0x20:
+        case 0x20: {
             PC--;  // JSR pushes address - 1 onto the stack
             stack_push(UPPER(PC));
             stack_push(LOWER(PC));
             PC = COMBINE(arg1, arg2);
             break;
+        }
         // NOP 
-        case 0xEA:
+        case 0xEA: {
             PC += instr_bytes[opcode];
             break;
+        }
         // SEC
-        case 0x38:
+        case 0x38: {
             PC += instr_bytes[opcode];
             SET_BIT(P, 0);
             break;
+        }
         // BCS
-        case 0xB0:
+        case 0xB0: {
             PC += instr_bytes[opcode];
             if (CARRY_SET()) {
                 uint16_t rel = PC + arg1;
@@ -144,8 +157,9 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
         // BCC
-        case 0x90:
+        case 0x90: {
             PC += instr_bytes[opcode];
             if (!CARRY_SET()) {
                 uint16_t rel = PC + arg1;
@@ -153,20 +167,23 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
         // CLC
-        case 0x18:
+        case 0x18: {
             PC += instr_bytes[opcode];
             CLR_BIT(P, 0);
             break;
+        }
         // LDA
-        case 0xA9: // immediate 
+        case 0xA9: { // immediate 
             PC += instr_bytes[opcode];
             A = arg1;
 			SET_SIGN(arg1);
 			SET_ZERO(arg1);
             break;
+        }
         // BEQ
-        case 0xF0:
+        case 0xF0: {
             PC += instr_bytes[opcode];
             if (ZERO_SET()) {
                 uint16_t rel = PC + arg1;
@@ -174,8 +191,9 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
         // BNE
-        case 0xD0:
+        case 0xD0: {
             PC += instr_bytes[opcode];
             if (!ZERO_SET()) {
                 uint16_t rel = PC + arg1;
@@ -183,23 +201,26 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
         // STA
-        case 0x85: // zero-page absolute
+        case 0x85: { // zero-page absolute
             PC += instr_bytes[opcode];
             write(COMBINE(0, arg1), A);
             SET_SIGN(A);
             SET_ZERO(A);
             break;
+        }
         // BIT
-        case 0x24: // zero-page absolute 
+        case 0x24: { // zero-page absolute 
             PC += instr_bytes[opcode];
             uint8_t m = read(COMBINE(0, arg1));
             SET_SIGN(m);
             SET_ZERO((m & A));
             SET_OVERFLOW(m);
             break;
+        }
         // BVS
-        case 0x70:
+        case 0x70: {
             PC += instr_bytes[opcode];
             if (OVERFLOW_SET()) {
                 uint16_t rel = PC + arg1;
@@ -207,8 +228,9 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
         // BVC
-        case 0x50:
+        case 0x50: {
             PC += instr_bytes[opcode];
             if (!OVERFLOW_SET()) {
                 uint16_t rel = PC + arg1;
@@ -216,6 +238,24 @@ void execute(uint8_t opcode) {
                 PC = rel; 
             }
             break;
+        }
+        // BPL
+        case 0x10: {
+            PC += instr_bytes[opcode];
+            if (!SIGN_SET()) {
+                uint16_t rel = PC + arg1;
+                BRANCH_CYCLE_INCREMENT(rel);
+                PC = rel; 
+            }
+            break;
+        }
+        // RTS
+        case 0x60: {
+            uint8_t pc_lower = stack_pop();
+            uint8_t pc_upper = stack_pop();
+            PC = COMBINE(pc_lower, pc_upper) + 1;
+            break;
+        }
         default:
             ERROR("Invalid opcode");
     }
@@ -224,16 +264,11 @@ void execute(uint8_t opcode) {
     if (CYC >= SL_RESET) { // todo: >= or > ?
         CYC = CYC % SL_RESET;
         SL++;
+        if (SL > 260) SL = -1; 
     }
 }
 
-void run() {
-    while (true) {
-        execute(read(PC));
-    }
-}
-
-int init() {
+int run() {
     int res = 0;
 
     // todo: use ERROR for error handling in gamepak handler code?
@@ -244,7 +279,11 @@ int init() {
     memset(ram, 0, sizeof(ram));
 
     begin_logging();
-    run();
+
+    while (SL <= 242) {// todo while (true) {
+        execute(read(PC));
+    }
+
     end_logging();
 
     free(gamepak.trainer);

@@ -29,23 +29,28 @@
  * S   V       B   D   I   Z   C
 */
 
-/* 1 if a is 0, 0 otherwise */
 #define CHECK_ZERO(a) (a == 0)
-
-/* 1 if a is negative, 0 otherwise. */
 #define CHECK_SIGN(a) (CHK_BIT(a, 7))
 
-// todo: use XOR here instead for bonus points?
-// todo: rename these perhaps..?
+// Set flag if result of a is zero / signed
 #define SET_ZERO(a) (CHECK_ZERO(a) ? SET_BIT(P, 1) : CLR_BIT(P, 1))
 #define SET_SIGN(a) (CHECK_SIGN(a) ? SET_BIT(P, 7) : CLR_BIT(P, 7))
-#define SET_OVERFLOW(a) (a & 0x40 ? SET_BIT(P, 6) : CLR_BIT(P, 6))
+#define SET_CARRY(a) (a ? SET_BIT(P, 0) : CLR_BIT(P, 0))
+
+// Set flag if a is true
+#define SET_OVERFLOW(a) (a ? SET_BIT(P, 6) : CLR_BIT(P, 6))
+#define SET_INTERRUPT(a) (a ? SET_BIT(P, 2) : CLR_BIT(P, 2))
+#define SET_DECIMAL(a) (a ? SET_BIT(P, 3) : CLR_BIT(P, 3))
+#define SET_B(a) (a ? SET_BIT(P, 4) : CLR_BIT(P, 4))
 
 /* Each macro below returns if the respective flag in P is set */
 #define CARRY_SET() (CHK_BIT(P, 0))
 #define ZERO_SET() (CHK_BIT(P, 1))
 #define OVERFLOW_SET() (CHK_BIT(P, 6))
 #define SIGN_SET() (CHK_BIT(P, 7))
+#define INTERRUPT_SET() (CHK_BIT(P, 2))
+#define DECIMAL_SET() (CHK_BIT(P, 3))
+#define B_SET() (CHK_BIT(P, 4))
 
 /* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
 #define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6);

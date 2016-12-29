@@ -15,5 +15,14 @@ http://fms.komkon.org/EMUL8/NES.html
 JSR and RTS trick
 https://wiki.nesdev.com/w/index.php/RTS_Trick#About_JSR_and_RTS
 
+PHP, PLA confusion. Subtle!
+https://forums.nesdev.com/viewtopic.php?f=10&t=10049
+
+BRK and B bit confusion. Subtle!
+http://visual6502.org/wiki/index.php?title=6502_BRK_and_B_bit
+
+ADC and SBC 
+http://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-implement-adc-and-sbc
+
 Overview
 http://nesdev.com/NESDoc.pdf

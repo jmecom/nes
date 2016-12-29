@@ -206,7 +206,7 @@ void execute(uint8_t opcode) {
             uint8_t m = read(COMBINE(0, arg1));
             SET_SIGN(m);
             SET_ZERO((m & A));
-            SET_OVERFLOW(m);
+            SET_OVERFLOW(m & 0x40); // copy bit 6
             break;
         }
         // BVS
@@ -241,6 +241,47 @@ void execute(uint8_t opcode) {
             uint8_t pc_lower = stack_pop();
             uint8_t pc_upper = stack_pop();
             PC = COMBINE(pc_lower, pc_upper) + 1;
+            break;
+        }
+        // SEI 
+        case 0x78: {
+            SET_INTERRUPT(1);
+            break;
+        }
+        // SED
+        case 0xF8: {
+            SET_DECIMAL(1);
+            break;
+        }
+        // PHP
+        case 0x08: {
+            // PHP and BRK push the flags with bit 4 true. 
+            // IRQ and NMI push bit 4 false.
+            SET_B(1);
+            stack_push(P);
+            SET_B(0);
+            break;
+        }
+        // PLA
+        case 0x68: {
+            A = stack_pop();
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // AND
+        case 0x29: { // immediate 
+            A &= arg1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // CMP
+        case 0xC9: { //immediate 
+            uint8_t m = A - arg1;
+            SET_SIGN(m);
+            SET_ZERO(m);
+            SET_CARRY(A >= arg1);
             break;
         }
         default:

@@ -284,6 +284,21 @@ void execute(uint8_t opcode) {
             SET_CARRY(A >= arg1);
             break;
         }
+        // CLD 
+        case 0xD8: {
+            SET_DECIMAL(0);
+            break;
+        }
+        // PHA
+        case 0x48: {
+            stack_push(A);
+            break;
+        }
+        // PLP
+        case 0x28: {
+            // todo
+            break;
+        }
         default:
             ERROR("Invalid opcode");
     }
@@ -308,7 +323,7 @@ int run() {
 
     begin_logging();
 
-    while (SL <= 242) {// todo while (true) {
+    while (true) {
         execute(read(PC));
     }
 

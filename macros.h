@@ -24,6 +24,9 @@
 /* 1 if nth bit of a is set, 0 otherwise */
 #define CHK_BIT(a, n) (!!((a) & (1 << n)))
 
+/* Sets b[n] = a[n] */
+#define CPY_BIT(a, b, n) if (CHK_BIT(a, n)) SET_BIT(b, n); else CLR_BIT(b, n);
+
 /* For reference, the status register:
  * 7   6   5   4   3   2   1   0
  * S   V       B   D   I   Z   C
@@ -35,9 +38,9 @@
 // Set flag if result of a is zero / signed
 #define SET_ZERO(a) (CHECK_ZERO(a) ? SET_BIT(P, 1) : CLR_BIT(P, 1))
 #define SET_SIGN(a) (CHECK_SIGN(a) ? SET_BIT(P, 7) : CLR_BIT(P, 7))
-#define SET_CARRY(a) (a ? SET_BIT(P, 0) : CLR_BIT(P, 0))
 
 // Set flag if a is true
+#define SET_CARRY(a) (a ? SET_BIT(P, 0) : CLR_BIT(P, 0))
 #define SET_OVERFLOW(a) (a ? SET_BIT(P, 6) : CLR_BIT(P, 6))
 #define SET_INTERRUPT(a) (a ? SET_BIT(P, 2) : CLR_BIT(P, 2))
 #define SET_DECIMAL(a) (a ? SET_BIT(P, 3) : CLR_BIT(P, 3))

@@ -15,13 +15,16 @@ http://fms.komkon.org/EMUL8/NES.html
 JSR and RTS trick
 https://wiki.nesdev.com/w/index.php/RTS_Trick#About_JSR_and_RTS
 
-PHP, PLA confusion. Subtle!
-https://forums.nesdev.com/viewtopic.php?f=10&t=10049
+Status register
+  https://forums.nesdev.com/viewtopic.php?f=10&t=10049
+  https://wiki.nesdev.com/w/index.php/Status_flags
+  http://visual6502.org/wiki/index.php?title=6502_BRK_and_B_bit
+  http://nesdev.com/the%20'B'%20flag%20&%20BRK%20instruction.txt
 
-BRK and B bit confusion. Subtle!
-http://visual6502.org/wiki/index.php?title=6502_BRK_and_B_bit
+Carry vs Overflow
+http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
 
-ADC and SBC 
+ADC and SBC  -- perhaps not too relevant
 http://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-implement-adc-and-sbc
 
 Overview

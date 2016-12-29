@@ -296,7 +296,72 @@ void execute(uint8_t opcode) {
         }
         // PLP
         case 0x28: {
-            // todo
+            // PLP and RTI pull from the stack, but ignore bits 4 and 5
+            uint8_t m = stack_pop();
+            CPY_BIT(P, m, 4);
+            CPY_BIT(P, m, 5);
+            P = m;
+            break;
+        }
+        // BMI
+        case 0x30: {
+            if (SIGN_SET()) {
+                uint16_t rel = PC + arg1;
+                BRANCH_CYCLE_INCREMENT(rel);
+                PC = rel; 
+            }
+            break;
+        }
+        // ORA
+        case 0x09: { // immediate 
+            A |= arg1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // CLV
+        case 0xB8: {
+            SET_OVERFLOW(0);
+            break;
+        }
+        // EOR
+        case 0x49: { // immediate 
+            A ^= arg1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // ADC
+        case 0x69: { // immediate
+            uint16_t sum = A + arg1 + CARRY_SET();
+            SET_OVERFLOW(!((A ^ arg1) & 128) && ((A ^ sum) & 128));
+            SET_CARRY((sum >= 256));
+            A = (uint8_t) sum;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // LDY
+        case 0xA0: { // immediate 
+            Y = arg1;
+			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
+			SET_ZERO(arg1);
+            break;
+        }
+        // CPY
+        case 0xC0: { // immediate 
+            uint8_t m = Y - arg1;
+            SET_SIGN(m);
+            SET_ZERO(m);
+            SET_CARRY(Y >= arg1);     
+            break;
+        }
+        // CPX
+        case 0xE0: { // immediate 
+            uint8_t m = X - arg1;
+            SET_SIGN(m);
+            SET_ZERO(m);
+            SET_CARRY(X >= arg1);
             break;
         }
         default:

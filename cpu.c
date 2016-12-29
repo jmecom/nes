@@ -131,6 +131,7 @@ void execute(uint8_t opcode) {
         }
         // JSR 
         case 0x20: {
+            PC += instr_bytes[opcode];
             PC--;  // JSR pushes address - 1 onto the stack
             stack_push(UPPER(PC));
             stack_push(LOWER(PC));

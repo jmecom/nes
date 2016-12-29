@@ -12,5 +12,8 @@ http://obelisk.me.uk/6502/reference.html
 Hardware architecture -- not 6502
 http://fms.komkon.org/EMUL8/NES.html
 
+JSR and RTS trick
+https://wiki.nesdev.com/w/index.php/RTS_Trick#About_JSR_and_RTS
+
 Overview
 http://nesdev.com/NESDoc.pdf

@@ -51,13 +51,13 @@ void write(uint16_t idx, uint8_t val) {
 }
 
 void stack_push(uint8_t val) {
-    write(SP, val);
+    write(SP + 256, val);
     SP--;
 }
 
 uint8_t stack_pop() {
     SP++;
-    uint8_t val = read(SP);
+    uint8_t val = read(SP + 256);
     return val;
 }
 
@@ -94,8 +94,8 @@ void execute(uint8_t opcode) {
         // LDX
         case 0xA2: { // immediate 
             X = arg1;
-			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
-			SET_ZERO(arg1);
+			SET_SIGN(X); // todo: possibly handling this wrong in some cases?
+			SET_ZERO(X);
             break;
         }
         case 0xA6: { // zero-page absolute
@@ -106,8 +106,10 @@ void execute(uint8_t opcode) {
             ERROR("Not yet implemented");
             break;
         }
-        case 0xAE: {
-            ERROR("Not yet implemented");
+        case 0xAE: { // absolute
+            X = read(COMBINE(arg1, arg2));
+            SET_SIGN(X);
+            SET_ZERO(X);
             break;
         }
         case 0xBE: {
@@ -125,8 +127,8 @@ void execute(uint8_t opcode) {
             ERROR("Not yet implemented");
             break;
         }
-        case 0x8E: { // 
-            ERROR("Not yet implemented");
+        case 0x8E: { // absolute
+            write(COMBINE(arg1, arg2), X);
             break;
         }
         // JSR 
@@ -172,9 +174,15 @@ void execute(uint8_t opcode) {
         // LDA
         case 0xA9: { // immediate 
             A = arg1;
-			SET_SIGN(arg1);
-			SET_ZERO(arg1);
+			SET_SIGN(A);
+			SET_ZERO(A);
             break;
+        }
+        case 0xAD: { // absolute 
+            A = read(COMBINE(arg1, arg2));
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break; 
         }
         // BEQ
         case 0xF0: {
@@ -435,6 +443,11 @@ void execute(uint8_t opcode) {
             X = SP;
             SET_SIGN(X);
             SET_ZERO(X);
+            break;
+        }
+        // TXS
+        case 0x9A: {
+            SP = X;
             break;
         }
         default:

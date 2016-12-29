@@ -125,7 +125,7 @@ void execute(uint8_t opcode) {
             ERROR("Not yet implemented");
             break;
         }
-        case 0x8E: {
+        case 0x8E: { // 
             ERROR("Not yet implemented");
             break;
         }
@@ -335,8 +335,18 @@ void execute(uint8_t opcode) {
         case 0x69: { // immediate
             uint16_t sum = A + arg1 + CARRY_SET();
             SET_OVERFLOW(!((A ^ arg1) & 128) && ((A ^ sum) & 128));
-            SET_CARRY((sum >= 256));
+            SET_CARRY(sum >= 256);
             A = (uint8_t) sum;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // SBC
+        case 0xE9: { // immediate 
+            uint16_t diff = A - arg1 - !CARRY_SET();
+            SET_OVERFLOW(((A ^ arg1) & 128) && ((A ^ diff) & 128));
+            SET_CARRY(diff < 256);
+            A = (uint8_t) diff;
             SET_SIGN(A);
             SET_ZERO(A);
             break;
@@ -344,7 +354,7 @@ void execute(uint8_t opcode) {
         // LDY
         case 0xA0: { // immediate 
             Y = arg1;
-			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
+			SET_SIGN(arg1);
 			SET_ZERO(arg1);
             break;
         }
@@ -362,6 +372,69 @@ void execute(uint8_t opcode) {
             SET_SIGN(m);
             SET_ZERO(m);
             SET_CARRY(X >= arg1);
+            break;
+        }
+        // INY 
+        case 0xC8: {
+            Y++;
+            SET_SIGN(Y);
+            SET_ZERO(Y);
+            break;
+        }
+        // INX 
+        case 0xE8: {
+            X++;
+            SET_SIGN(X);
+            SET_ZERO(X);
+            break;
+        }
+        // DEY
+        case 0x88: {
+            Y--;
+            SET_SIGN(Y);
+            SET_ZERO(Y);
+            break;
+        }
+        // DEX 
+        case 0xCA: {
+            X--;
+            SET_SIGN(X);
+            SET_ZERO(X);
+            break;
+        }
+        // TAY
+        case 0xA8: {
+            Y = A;
+            SET_SIGN(Y);
+            SET_ZERO(Y);
+            break;
+        }
+        // TAX
+        case 0xAA: {
+            X = A;
+            SET_SIGN(X);
+            SET_ZERO(X);
+            break;
+        }
+        // TYA
+        case 0x98: {
+            A = Y;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // TXA
+        case 0x8A: {
+            A = X;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // TSX
+        case 0xBA: {
+            X = SP;
+            SET_SIGN(X);
+            SET_ZERO(X);
             break;
         }
         default:

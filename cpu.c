@@ -78,7 +78,9 @@ void execute(uint8_t opcode) {
         default:
             ERROR("Invalid number of arguments for instruction");
     }
-    
+
+    PC += instr_bytes[opcode];
+
     switch (opcode) {
         // JMP
         case 0x4C: { // absolute
@@ -91,7 +93,6 @@ void execute(uint8_t opcode) {
         }
         // LDX
         case 0xA2: { // immediate 
-            PC += instr_bytes[opcode];
             X = arg1;
 			SET_SIGN(arg1); // todo: possibly handling this wrong in some cases?
 			SET_ZERO(arg1);
@@ -117,7 +118,6 @@ void execute(uint8_t opcode) {
         }
         // STX
         case 0x86: { // zero-page absolute
-            PC += instr_bytes[opcode];
             write(COMBINE(0, arg1), X);
             break;
         }
@@ -131,7 +131,6 @@ void execute(uint8_t opcode) {
         }
         // JSR 
         case 0x20: {
-            PC += instr_bytes[opcode];
             PC--;  // JSR pushes address - 1 onto the stack
             stack_push(UPPER(PC));
             stack_push(LOWER(PC));
@@ -140,18 +139,15 @@ void execute(uint8_t opcode) {
         }
         // NOP 
         case 0xEA: {
-            PC += instr_bytes[opcode];
             break;
         }
         // SEC
         case 0x38: {
-            PC += instr_bytes[opcode];
             SET_BIT(P, 0);
             break;
         }
         // BCS
         case 0xB0: {
-            PC += instr_bytes[opcode];
             if (CARRY_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -161,7 +157,6 @@ void execute(uint8_t opcode) {
         }
         // BCC
         case 0x90: {
-            PC += instr_bytes[opcode];
             if (!CARRY_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -171,13 +166,11 @@ void execute(uint8_t opcode) {
         }
         // CLC
         case 0x18: {
-            PC += instr_bytes[opcode];
             CLR_BIT(P, 0);
             break;
         }
         // LDA
         case 0xA9: { // immediate 
-            PC += instr_bytes[opcode];
             A = arg1;
 			SET_SIGN(arg1);
 			SET_ZERO(arg1);
@@ -185,7 +178,6 @@ void execute(uint8_t opcode) {
         }
         // BEQ
         case 0xF0: {
-            PC += instr_bytes[opcode];
             if (ZERO_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -195,7 +187,6 @@ void execute(uint8_t opcode) {
         }
         // BNE
         case 0xD0: {
-            PC += instr_bytes[opcode];
             if (!ZERO_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -205,7 +196,6 @@ void execute(uint8_t opcode) {
         }
         // STA
         case 0x85: { // zero-page absolute
-            PC += instr_bytes[opcode];
             write(COMBINE(0, arg1), A);
             SET_SIGN(A);
             SET_ZERO(A);
@@ -213,7 +203,6 @@ void execute(uint8_t opcode) {
         }
         // BIT
         case 0x24: { // zero-page absolute 
-            PC += instr_bytes[opcode];
             uint8_t m = read(COMBINE(0, arg1));
             SET_SIGN(m);
             SET_ZERO((m & A));
@@ -222,7 +211,6 @@ void execute(uint8_t opcode) {
         }
         // BVS
         case 0x70: {
-            PC += instr_bytes[opcode];
             if (OVERFLOW_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -232,7 +220,6 @@ void execute(uint8_t opcode) {
         }
         // BVC
         case 0x50: {
-            PC += instr_bytes[opcode];
             if (!OVERFLOW_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);
@@ -242,7 +229,6 @@ void execute(uint8_t opcode) {
         }
         // BPL
         case 0x10: {
-            PC += instr_bytes[opcode];
             if (!SIGN_SET()) {
                 uint16_t rel = PC + arg1;
                 BRANCH_CYCLE_INCREMENT(rel);

@@ -56,7 +56,7 @@
 #define B_SET() (CHK_BIT(P, 4))
 
 /* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
-#define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6);
+#define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6)
 
 /* Indirect, X addressing mode */
-#define INDIRECT_X(lower) read(COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0))));
+#define INDIRECT_X(lower) (read(COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0)))))

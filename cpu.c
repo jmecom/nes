@@ -220,14 +220,15 @@ void execute(uint8_t opcode) {
         // STA
         case 0x85: { // zero-page absolute
             write(COMBINE(arg1, 0), A);
-            SET_SIGN(A);
-            SET_ZERO(A);
             break;
         }
         case 0x8D: { // absolute
             write(COMBINE(arg1, arg2), A);
-            SET_SIGN(A);
-            SET_ZERO(A);
+            break;
+        }
+        case 0x81: { // indirect X
+            uint8_t lower = arg1 + X;
+            write(INDIRECT_X(lower), A);
             break;
         }
         // BIT

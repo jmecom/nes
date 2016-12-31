@@ -109,7 +109,7 @@ void execute(uint8_t opcode) {
             src16 = COMBINE(read(COMBINE((uint8_t)(arg1+X), 0)), read(COMBINE((uint8_t)(arg1+X+1), 0)));
             break;
         case INDIRECT:
-            src16 = read(COMBINE(arg1, arg2));
+            ERROR("Mode not yet implemented");
             break;
         case INDIRECT_INDEXED:
             ERROR("Mode not yet implemented");
@@ -133,7 +133,6 @@ void execute(uint8_t opcode) {
     switch (opcode) {
         // JMP
         case 0x4C:
-        case 0x6C:
             PC = src16;
             break;
         // LDX
@@ -184,7 +183,7 @@ void execute(uint8_t opcode) {
         // LDA
         case 0xA9: // immediate 
             A = src8;
-			SET_SIGN_ZERO(A);
+            SET_SIGN_ZERO(A);
             break;
         case 0xAD: // absolute 
         case 0xA5: // zero-page absolute
@@ -348,7 +347,7 @@ void execute(uint8_t opcode) {
         // LDY
         case 0xA0:
             Y = src8;
-			SET_SIGN_ZERO(Y);
+            SET_SIGN_ZERO(Y);
             break;
         // CPY
         case 0xC0:

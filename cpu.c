@@ -91,8 +91,10 @@ void execute(uint8_t opcode) {
             src16 = COMBINE(arg1, arg2);
             break;
         case ABSOLUTE_X:
+            ERROR("Mode not yet implemented");
             break;
         case ABSOLUTE_Y:
+            ERROR("Mode not yet implemented");
             break;
         case ACCUMULATOR:
             src8 = A;
@@ -110,6 +112,7 @@ void execute(uint8_t opcode) {
             src16 = read(COMBINE(arg1, arg2));
             break;
         case INDIRECT_INDEXED:
+            ERROR("Mode not yet implemented");
             break;
         case RELATIVE:
             src16 = PC + arg1;
@@ -118,8 +121,10 @@ void execute(uint8_t opcode) {
             src16 = COMBINE(arg1, 0);
             break;
         case ZERO_PAGE_X:
+            ERROR("Mode not yet implemented");
             break;
         case ZERO_PAGE_Y:
+            ERROR("Mode not yet implemented");
             break;
         default:
             ERROR("Invalid mode");
@@ -454,7 +459,6 @@ void execute(uint8_t opcode) {
             // Bit 0 = current carry flag 
             if (CARRY_SET()) SET_BIT(src8, 0); else CLR_BIT(src8, 0);
             SET_SIGN_ZERO(src8);
-
             // Carry flag = old bit 7
             SET_CARRY(CHK_BIT(tmp, 7));
 

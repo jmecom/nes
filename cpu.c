@@ -25,27 +25,30 @@ uint32_t SL = 241;    // Scanline -- todo
 
 /* Memory */
 gamepak_t gamepak;
+uint8_t sram[SRAM_SIZE];
 uint8_t ram[RAM_SIZE];
 
 uint8_t read(uint16_t idx) {
-    if (idx > PRG_ROM_LOWER_LIMIT) {
-        /* idx in PRG-ROM */
-
+    if (idx >= PRG_ROM_LOWER_LIMIT) { // PRG-ROM
         // gamepak.prg_rom starts at 0 in code, but is indexed starting at 
         // 0x8000 in the memory map; so offset it.
         return gamepak.prg_rom[idx - PRG_ROM_LOWER_LIMIT];
-    } else if (idx < RAM_MIRROR_UPPER_LIMIT) {
-        /* idx in RAM or RAM mirror */
+    } else if (idx <= RAM_MIRROR_UPPER_LIMIT) { // RAM
         return ram[idx % RAM_SIZE]; // modulus handles mirroring
+    } else if (idx <= SRAM_UPPER_LIMIT && idx >= SRAM_LOWER_LIMIT) { // SRAM
+        return sram[idx];
     } else {
         ERROR("Couldn't fetch from memory");
     }
 }
 
 void write(uint16_t idx, uint8_t val) {
-    if (idx < RAM_MIRROR_UPPER_LIMIT) {
+    if (idx <= RAM_MIRROR_UPPER_LIMIT) { // RAM
         ram[idx % RAM_SIZE] = val;
+    } else if (idx <= SRAM_UPPER_LIMIT && idx >= SRAM_LOWER_LIMIT) { // SRAM
+        sram[idx] = val;
     } else {
+        printf("idx: %x\n", idx);
         ERROR("Couldn't write to memory");
     }
 }
@@ -119,7 +122,7 @@ void execute(uint8_t opcode) {
         }
         // STX
         case 0x86: { // zero-page absolute
-            write(COMBINE(0, arg1), X);
+            write(COMBINE(arg1, 0), X);
             break;
         }
         case 0x96: {
@@ -183,6 +186,12 @@ void execute(uint8_t opcode) {
             SET_ZERO(A);
             break; 
         }
+        case 0xA5: { // zero-page absolute
+            A = read(COMBINE(arg1, 0));
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
         // BEQ
         case 0xF0: {
             if (ZERO_SET()) {
@@ -203,14 +212,20 @@ void execute(uint8_t opcode) {
         }
         // STA
         case 0x85: { // zero-page absolute
-            write(COMBINE(0, arg1), A);
+            write(COMBINE(arg1, 0), A);
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        case 0x8D: { // absolute
+            write(COMBINE(arg1, arg2), A);
             SET_SIGN(A);
             SET_ZERO(A);
             break;
         }
         // BIT
         case 0x24: { // zero-page absolute 
-            uint8_t m = read(COMBINE(0, arg1));
+            uint8_t m = read(COMBINE(arg1, 0));
             SET_SIGN(m);
             SET_ZERO((m & A));
             SET_OVERFLOW(m & 0x40); // copy bit 6
@@ -462,6 +477,46 @@ void execute(uint8_t opcode) {
             PC = COMBINE(pc_lower, pc_upper);
             break;
         }
+        // LSR
+        case 0x4A: { // accumulator
+            SET_CARRY(CHK_BIT(A, 0)); // todo, think this is right but may need to double check
+            A >>= 1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // ASL
+        case 0x0A: { // accumulator
+            SET_CARRY(CHK_BIT(A, 7));
+            A <<= 1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        // ROR
+        case 0x6A: { // accumulator 
+            uint8_t m = A;
+            A >>= 1;
+            // Bit 7 = current carry flag 
+            if (CARRY_SET()) SET_BIT(A, 7); else CLR_BIT(A, 7);
+            SET_SIGN(A);
+            SET_ZERO(A);
+            // Carry flag = old bit 0
+            SET_CARRY(CHK_BIT(m, 0));
+            break;
+        }
+        // ROL
+        case 0x2A: { // accumulator
+            uint8_t m = A;
+            A <<= 1;
+            // Bit 0 = current carry flag 
+            if (CARRY_SET()) SET_BIT(A, 0); else CLR_BIT(A, 0);
+            SET_SIGN(A);
+            SET_ZERO(A);
+            // Carry flag = old bit 7
+            SET_CARRY(CHK_BIT(m, 7));
+            break;
+        }
         default:
             ERROR("Invalid opcode");
     }
@@ -483,6 +538,7 @@ int run() {
     }
 
     memset(ram, 0, sizeof(ram));
+    memset(sram, 0, sizeof(sram));
 
     begin_logging();
 

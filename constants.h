@@ -24,6 +24,10 @@
 #define RAM_MIRROR_UPPER_LIMIT 0x2000
 #define RAM_UPPER_LIMIT 0x0800
 
+#define SRAM_SIZE 8192
+#define SRAM_UPPER_LIMIT 0x8000
+#define SRAM_LOWER_LIMIT 0x6000
+
 /* Lookup tables */
 const uint8_t instr_bytes[256];
 const uint8_t instr_cycles[256];

@@ -96,8 +96,8 @@ void execute(uint8_t opcode) {
         // LDX
         case 0xA2: { // immediate 
             X = arg1;
-			SET_SIGN(X); // todo: possibly handling this wrong in some cases?
-			SET_ZERO(X);
+            SET_SIGN(X); // todo: possibly handling this wrong in some cases?
+            SET_ZERO(X);
             break;
         }
         case 0xA6: { // zero-page absolute
@@ -194,7 +194,7 @@ void execute(uint8_t opcode) {
         }
         case 0xA1: { // indirect X
             uint8_t lower = arg1 + X;
-            A = INDIRECT_X(lower);
+            A = read(INDIRECT_X(lower));
             SET_SIGN(A);
             SET_ZERO(A);
             break;
@@ -306,6 +306,13 @@ void execute(uint8_t opcode) {
             SET_ZERO(A);
             break;
         }
+        case 0x21: { // zero-page
+            uint8_t lower = arg1 + X;
+            A &= read(INDIRECT_X(lower));
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
         // CMP
         case 0xC9: { //immediate 
             uint8_t m = A - arg1;
@@ -349,6 +356,13 @@ void execute(uint8_t opcode) {
             SET_ZERO(A);
             break;
         }
+        case 0x01: { // indirect x
+            uint8_t lower = arg1 + X;
+            A |= read(INDIRECT_X(lower));
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
         // CLV
         case 0xB8: {
             SET_OVERFLOW(0);
@@ -357,6 +371,13 @@ void execute(uint8_t opcode) {
         // EOR
         case 0x49: { // immediate 
             A ^= arg1;
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
+        case 0x41: { // indirect x
+            uint8_t lower = arg1 + X;
+            A ^= read(INDIRECT_X(lower));
             SET_SIGN(A);
             SET_ZERO(A);
             break;

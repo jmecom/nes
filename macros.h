@@ -59,4 +59,4 @@
 #define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6)
 
 /* Indirect, X addressing mode */
-#define INDIRECT_X(lower) (read(COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0)))))
+#define INDIRECT_X(lower) (COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0))))

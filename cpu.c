@@ -21,7 +21,7 @@ uint8_t Y = 0;        // Index register Y
 
 /* State */
 uint32_t CYC = 0;     // Cycle counter
-uint32_t SL = 241;    // Scanline -- todo
+uint32_t SL = 241;    // Scanline
 
 /* Memory */
 gamepak_t gamepak;
@@ -48,7 +48,6 @@ void write(uint16_t idx, uint8_t val) {
     } else if (idx <= SRAM_UPPER_LIMIT && idx >= SRAM_LOWER_LIMIT) { // SRAM
         sram[idx] = val;
     } else {
-        printf("idx: %x\n", idx);
         ERROR("Couldn't write to memory");
     }
 }
@@ -96,7 +95,7 @@ void execute(uint8_t opcode) {
         // LDX
         case 0xA2: { // immediate 
             X = arg1;
-            SET_SIGN(X); // todo: possibly handling this wrong in some cases?
+            SET_SIGN(X);
             SET_ZERO(X);
             break;
         }

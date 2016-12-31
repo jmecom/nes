@@ -16,7 +16,6 @@ def main():
             print "Logs differ\n    nestest.log: %s\n    out.log:     %s\n" % (line1, line2)
             sys.exit(1)
 
-
     print "No differences found so far. Good job!"
 
 if __name__ == '__main__':

@@ -2,18 +2,22 @@
 
 #include <stdint.h>
 
-/* Addressing modes */
-#define IMMEDIATE 1
-#define ABSOLUTE 2
-#define ZERO_PAGE_ABSOLUTE 3
-#define IMPLIED 4
-#define ACCUMULATOR 5
-#define INDEXED 6
-#define ZERO_PAGE_INDEXED 7
+/* Addressing modes
+ * http://www.obelisk.me.uk/6502/addressing.html
+ */
+#define ABSOLUTE 1
+#define ABSOLUTE_X 2
+#define ABSOLUTE_Y 3
+#define ACCUMULATOR 4
+#define IMMEDIATE 5
+#define IMPLIED 6
+#define INDEXED_INDIRECT 7
 #define INDIRECT 8
-#define PRE_INDEXED_INDIRECT 9
-#define POST_INDEXED_INDIRECT 10
-#define RELATIVE 11
+#define INDIRECT_INDEXED 9
+#define RELATIVE 10
+#define ZERO_PAGE 11
+#define ZERO_PAGE_X 12
+#define ZERO_PAGE_Y 13
 
 /* Memory */
 #define PRG_ROM_UPPER_LIMIT 0x10000
@@ -28,11 +32,15 @@
 #define SRAM_UPPER_LIMIT 0x8000
 #define SRAM_LOWER_LIMIT 0x6000
 
-/* Lookup tables */
+/* Lookup tables 
+ * Rather than retyping by hand, these are taken from 
+ * https://github.com/fogleman/nes/blob/master/nes/cpu.go
+ */
 const uint8_t instr_bytes[256];
 const uint8_t instr_cycles[256];
 const uint8_t instr_ppu_cycles[256];
 const uint8_t instr_page_cycles[256];
+const uint8_t instr_modes[256];
 const char* instr_names[256];
 
 /* PPU */

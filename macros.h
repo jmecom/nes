@@ -38,6 +38,7 @@
 // Set flag if result of a is zero / signed, otherwise clear
 #define SET_ZERO(a) (CHECK_ZERO(a) ? SET_BIT(P, 1) : CLR_BIT(P, 1))
 #define SET_SIGN(a) (CHECK_SIGN(a) ? SET_BIT(P, 7) : CLR_BIT(P, 7))
+#define SET_SIGN_ZERO(a) SET_SIGN(a); SET_ZERO(a)
 
 // Set flag if a is true, otherwise clear
 #define SET_CARRY(a) (a ? SET_BIT(P, 0) : CLR_BIT(P, 0))

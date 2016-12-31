@@ -2,8 +2,8 @@
 
 /* Print error message and quit */
 #define ERROR(error_message) \
-    printf("%s\n", error_message); \
-    printf("Exited in function \"%s\" on line %d in %s\n", __func__, __LINE__, __FILE__); \
+    printf("[ERROR] %s\n", error_message); \
+    printf("[ERROR] Exited in function \"%s\" on line %d in %s\n", __func__, __LINE__, __FILE__); \
     exit(1)
     
 /* Combine two 8-bit values to one **little-endian** 16-bit value. */
@@ -57,3 +57,6 @@
 
 /* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
 #define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6);
+
+/* Indirect, X addressing mode */
+#define INDIRECT_X(lower) read(COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0))));

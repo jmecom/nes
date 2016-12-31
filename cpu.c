@@ -192,6 +192,13 @@ void execute(uint8_t opcode) {
             SET_ZERO(A);
             break;
         }
+        case 0xA1: { // indirect X
+            uint8_t lower = arg1 + X;
+            A = INDIRECT_X(lower);
+            SET_SIGN(A);
+            SET_ZERO(A);
+            break;
+        }
         // BEQ
         case 0xF0: {
             if (ZERO_SET()) {

@@ -140,6 +140,7 @@ void execute(uint8_t opcode) {
             X = src8;
             SET_SIGN_ZERO(X);
             break;
+        case 0xA6:
         case 0xAE:
             X = read(src16);
             SET_SIGN_ZERO(X);
@@ -148,6 +149,11 @@ void execute(uint8_t opcode) {
         case 0x86:
         case 0x8E:
             write(src16, X);
+            break;
+        // STY
+        case 0x8C:
+        case 0x84:
+            write(src16, Y);
             break;
         // JSR 
         case 0x20:
@@ -181,14 +187,12 @@ void execute(uint8_t opcode) {
             CLR_BIT(P, 0);
             break;
         // LDA
-        case 0xA9: // immediate 
-            A = src8;
-            SET_SIGN_ZERO(A);
-            break;
         case 0xAD: // absolute 
         case 0xA5: // zero-page absolute
         case 0xA1: // indexed indirect
-            A = read(src16);
+            src8 = read(src16);
+        case 0xA9: // immediate 
+            A = src8;
             SET_SIGN_ZERO(A);
             break;
         // BEQ
@@ -212,11 +216,12 @@ void execute(uint8_t opcode) {
             write(src16, A);
             break;
         // BIT
+        case 0x2C:
         case 0x24: 
-            tmp = read(src16);
-            SET_SIGN(tmp);
-            SET_ZERO((tmp & A));
-            SET_OVERFLOW(tmp & 0x40); // copy bit 6
+            src8 = read(src16);
+            SET_SIGN(src8);
+            SET_ZERO((src8 & A));
+            SET_OVERFLOW(src8 & 0x40); // copy bit 6
             break;
         // BVS
         case 0x70:
@@ -267,6 +272,9 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // AND
+        case 0x2D:
+        case 0x25:
+            src8 = read(src16);
         case 0x29:
             A &= src8;
             SET_SIGN_ZERO(A);
@@ -276,10 +284,14 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // CMP
+        case 0xC1:
+        case 0xCD:
+        case 0xC5: // zero page
+            src8 = read(src16);
         case 0xC9:
             tmp = A - src8;
             SET_SIGN_ZERO(tmp);
-            SET_CARRY(A >= arg1);
+            SET_CARRY(A >= src8);
             break;
         // CLD 
         case 0xD8:
@@ -305,12 +317,12 @@ void execute(uint8_t opcode) {
             }
             break;
         // ORA
+        case 0x01:
+        case 0x05:
+        case 0x0D:
+            src8 = read(src16);
         case 0x09:
             A |= src8;
-            SET_SIGN_ZERO(A);
-            break;
-        case 0x01:
-            A |= read(src16);
             SET_SIGN_ZERO(A);
             break;
         // CLV
@@ -318,6 +330,9 @@ void execute(uint8_t opcode) {
             SET_OVERFLOW(0);
             break;
         // EOR
+        case 0x4D:
+        case 0x45:
+            src8 = read(src16);
         case 0x49:
             A ^= src8;
             SET_SIGN_ZERO(A);
@@ -327,6 +342,10 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // ADC
+        case 0x61: // indirect, x
+        case 0x65: // zero-page 
+        case 0x6D:
+           src8 = read(src16); // grab operand and fall-through
         case 0x69: { // immediate
             uint16_t sum = A + src8 + CARRY_SET();
             SET_OVERFLOW(!((A ^ src8) & 128) && ((A ^ sum) & 128));
@@ -336,6 +355,10 @@ void execute(uint8_t opcode) {
             break;
         }
         // SBC
+        case 0xE1:
+        case 0xE5:
+        case 0xED:
+            src8 = read(src16);
         case 0xE9: { // immediate 
             uint16_t diff = A - src8 - !CARRY_SET();
             SET_OVERFLOW(((A ^ src8) & 128) && ((A ^ diff) & 128));
@@ -345,17 +368,26 @@ void execute(uint8_t opcode) {
             break;
         }
         // LDY
+        case 0xA4: // zero-page
+        case 0xAc: // absolute
+            src8 = read(src16);
         case 0xA0:
             Y = src8;
             SET_SIGN_ZERO(Y);
             break;
         // CPY
+        case 0xCC:
+        case 0xC4:
+            src8 = read(src16);
         case 0xC0:
             tmp = Y - src8;
             SET_SIGN_ZERO(tmp);
             SET_CARRY(Y >= src8);     
             break;
         // CPX
+        case 0xE4:
+        case 0xEC:
+            src8 = read(src16);
         case 0xE0:
             tmp = X - src8;
             SET_SIGN_ZERO(tmp);
@@ -371,6 +403,13 @@ void execute(uint8_t opcode) {
             X++;
             SET_SIGN_ZERO(X);
             break;
+        // INC
+        case 0xEE:
+        case 0xE6:
+            src8 = (uint8_t)(read(src16) + 1);
+            write(src16, src8);
+            SET_SIGN_ZERO(src8);
+            break;
         // DEY
         case 0x88:
             Y--;
@@ -380,6 +419,13 @@ void execute(uint8_t opcode) {
         case 0xCA:
             X--;
             SET_SIGN_ZERO(X);
+            break;
+        // DEC
+        case 0xCE:
+        case 0xC6:
+            src8 = (uint8_t)(read(src16) - 1);
+            write(src16, src8);
+            SET_SIGN_ZERO(src8);
             break;
         // TAY
         case 0xA8:
@@ -423,20 +469,31 @@ void execute(uint8_t opcode) {
             PC = COMBINE(pc_lo, pc_hi);
             break;
         // LSR
+        case 0x46:
+        case 0x4E:
+            src8 = read(src16);
         case 0x4A:
             SET_CARRY(CHK_BIT(src8, 0)); // todo, think this is right but may need to double check
             src8 >>= 1;
             SET_SIGN_ZERO(src8);
             if (mode == ACCUMULATOR) A = src8;
+            else write(src16, src8);
             break;
         // ASL
+        case 0x06:
+        case 0x0E:
+            src8 = read(src16);
         case 0x0A:
             SET_CARRY(CHK_BIT(src8, 7));
             src8 <<= 1;
             SET_SIGN_ZERO(src8);
             if (mode == ACCUMULATOR) A = src8;
+            else write(src16, src8);
             break;
         // ROR
+        case 0x66:
+        case 0x6E:
+            src8 = read(src16);
         case 0x6A:
             tmp = src8;
             src8 >>= 1;
@@ -449,8 +506,12 @@ void execute(uint8_t opcode) {
             SET_CARRY(CHK_BIT(tmp, 0));
 
             if (mode == ACCUMULATOR) A = src8;
+            else write(src16, src8);
             break;
         // ROL
+        case 0x26:
+        case 0x2E:
+            src8 = read(src16);
         case 0x2A:
             tmp = src8;
             src8 <<= 1;
@@ -462,6 +523,7 @@ void execute(uint8_t opcode) {
             SET_CARRY(CHK_BIT(tmp, 7));
 
             if (mode == ACCUMULATOR) A = src8;
+            else write(src16, src8);
             break;
         default:
             ERROR("Invalid opcode");

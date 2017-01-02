@@ -7,22 +7,22 @@
     exit(1)
     
 /* Combine two 8-bit values to one **little-endian** 16-bit value. */
-#define COMBINE(a, b) ((uint16_t) ((b << 8) | a))
+#define COMBINE(a, b) ((uint16_t) (((b) << 8) | (a)))
 
 /* Split 16-bit value in half and return the upper bits */
-#define UPPER(a) ((uint8_t) (a >> 8))
+#define UPPER(a) ((uint8_t) ((a) >> 8))
 
 /* Split 16-bit value in half and return the lower bits */
-#define LOWER(a) ((uint8_t) a)
+#define LOWER(a) ((uint8_t) (a))
 
 /* Set the nth bit of a */
-#define SET_BIT(a, n) (a |= (1 << n))
+#define SET_BIT(a, n) ((a) |= (1 << (n)))
 
 /* Clear the nth bit of a */
-#define CLR_BIT(a, n) (a &= ~(1 << n))
+#define CLR_BIT(a, n) ((a) &= ~(1 << (n)))
 
 /* 1 if nth bit of a is set, 0 otherwise */
-#define CHK_BIT(a, n) (!!((a) & (1 << n)))
+#define CHK_BIT(a, n) (!!((a) & (1 << (n))))
 
 /* Sets b[n] = a[n] */
 #define CPY_BIT(a, b, n) if (CHK_BIT(a, n)) SET_BIT(b, n); else CLR_BIT(b, n);

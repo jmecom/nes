@@ -19,6 +19,14 @@
 #define ZERO_PAGE_X 12
 #define ZERO_PAGE_Y 13
 
+/* Gamepak */
+#define HDR_MAGIC "NES\x1a"
+#define HDR_MAGIC_LEN 4
+#define HDR_LEN 16
+#define TRAINER_LEN 512
+#define PRG_ROM_BANK_LEN 16384
+#define CHR_ROM_BANK_LEN 8192
+
 /* Memory */
 #define PRG_ROM_UPPER_LIMIT 0x10000
 #define PRG_ROM_LOWER_LIMIT 0x8000

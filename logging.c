@@ -22,14 +22,14 @@ void log_cpu_state(uint8_t opcode, uint8_t num_args, ...) {
     va_start(ap, num_args);
 
     if (num_args == 0) {
-        char* str = "%02X  %02X        %s                     \
+        char* str = "%04X  %02X        %s                     \
         A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
 
         fprintf(log_fp, str, PC, opcode, \
         instr_names[opcode], A, X, Y, P, SP, CYC, SL);
     }
     if (num_args == 1) {
-        char* str = "%02X  %02X %02X     %s                     \
+        char* str = "%04X  %02X %02X     %s                     \
         A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
 
         uint8_t arg1 = va_arg(ap, int); // implicit type conversion
@@ -37,7 +37,7 @@ void log_cpu_state(uint8_t opcode, uint8_t num_args, ...) {
         fprintf(log_fp, str, PC, opcode, arg1, \
         instr_names[opcode], A, X, Y, P, SP, CYC, SL);
     } else if (num_args == 2) {
-        char* str = "%02X  %02X %02X %02X  %s                     \
+        char* str = "%04X  %02X %02X %02X  %s                     \
         A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d SL:%d\n";
 
         uint8_t arg1 = va_arg(ap, int);

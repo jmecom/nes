@@ -1,3 +1,6 @@
+JMP bug :)
+https://forums.nesdev.com/viewtopic.php?t=6621&p=64645
+
 Cpu cycle counting
 https://forums.nesdev.com/viewtopic.php?f=3&t=10266
 https://forums.nesdev.com/viewtopic.php?f=3&t=10193
@@ -14,6 +17,9 @@ http://fms.komkon.org/EMUL8/NES.html
 
 JSR and RTS trick
 https://wiki.nesdev.com/w/index.php/RTS_Trick#About_JSR_and_RTS
+
+Page boundary cossing
+http://forums.nesdev.com/viewtopic.php?t=365
 
 Status register
   https://forums.nesdev.com/viewtopic.php?f=10&t=10049

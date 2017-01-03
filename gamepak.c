@@ -4,13 +4,7 @@
 #include <string.h>
 
 #include "gamepak.h"
-
-const char* HDR_MAGIC = "NES\x1a";
-const int HDR_MAGIC_LEN = 4;
-const int HDR_LEN = 16;
-const int TRAINER_LEN = 512;
-const int PRG_ROM_BANK_LEN = 16384;
-const int CHR_ROM_BANK_LEN = 8192;
+#include "constants.h"
 
 int load(const char* fpath, gamepak_t* gamepak) {
     FILE *f;

@@ -90,12 +90,18 @@ void execute(uint8_t opcode) {
         case ABSOLUTE:
             src16 = COMBINE(arg1, arg2);
             break;
-        case ABSOLUTE_X:
-            ERROR("Mode not yet implemented");
+        case ABSOLUTE_X: {
+            uint16_t base = COMBINE(arg1, arg2);
+            src16 = base + X;
+            if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
-        case ABSOLUTE_Y:
-            ERROR("Mode not yet implemented");
+        }
+        case ABSOLUTE_Y: {
+            uint16_t base = COMBINE(arg1, arg2);
+            src16 = base + Y;
+            if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
+        }
         case ACCUMULATOR:
             src8 = A;
             break;
@@ -106,26 +112,45 @@ void execute(uint8_t opcode) {
             src8 = arg1;
             break;
         case INDEXED_INDIRECT:
-            src16 = COMBINE(read(COMBINE((uint8_t)(arg1+X), 0)), read(COMBINE((uint8_t)(arg1+X+1), 0)));
+            src16 = COMBINE(read(COMBINE((uint8_t)(arg1+X), 0)), 
+                            read(COMBINE((uint8_t)(arg1+X+1), 0)));
             break;
-        case INDIRECT:
-            ERROR("Mode not yet implemented");
+        case INDIRECT: {
+            pc_lo = read(COMBINE(arg1, arg2));
+
+            if (LOWER(COMBINE(arg1, arg2)) == 0xFF) {
+                // The NES has a hardware bug where indirect JMP is handled
+                // incorrectly if the address is of the form $xxFF. 
+                // Instead of incrementing the full 16 bit value, only the lower
+                // byte is incremented -- wrapping around, and causing the wrong 
+                // address to be read.
+                arg1 = (uint8_t)(arg1+1); 
+                pc_hi = read(COMBINE(arg1, arg2));
+            } else {
+                pc_hi = read(COMBINE(arg1, arg2)+1);
+            }
+
+            src16 = COMBINE(pc_lo, pc_hi);
             break;
-        case INDIRECT_INDEXED:
-            src16 = (uint16_t)(COMBINE(read(COMBINE(arg1, 0)), 
-                    read(COMBINE((uint8_t)(arg1+1), 0))) + Y);
+        }
+        case INDIRECT_INDEXED: {
+            uint16_t base = COMBINE(read(COMBINE(arg1, 0)), read(COMBINE((uint8_t)(arg1+1), 0)));
+            uint16_t addr = base + Y;
+            if (UPPER(base) != UPPER(addr)) CYC += 3;
+            src16 = addr;
             break;
+        }
         case RELATIVE:
-            src16 = PC + arg1;
+            src16 = PC + (int8_t) arg1;
             break;
         case ZERO_PAGE:
             src16 = COMBINE(arg1, 0);
             break;
         case ZERO_PAGE_X:
-            ERROR("Mode not yet implemented");
+            src16 = COMBINE((uint8_t)(arg1 + X), 0);
             break;
         case ZERO_PAGE_Y:
-            ERROR("Mode not yet implemented");
+            src16 = COMBINE((uint8_t)(arg1 + Y), 0);
             break;
         default:
             ERROR("Invalid mode");
@@ -134,9 +159,12 @@ void execute(uint8_t opcode) {
     switch (opcode) {
         // JMP
         case 0x4C:
+        case 0x6C:
             PC = src16;
             break;
         // LDX
+        case 0xB6:
+            src8 = read(src16);
         case 0xA2:
             X = src8;
             SET_SIGN_ZERO(X);
@@ -149,11 +177,13 @@ void execute(uint8_t opcode) {
         // STX
         case 0x86:
         case 0x8E:
+        case 0x96:
             write(src16, X);
             break;
         // STY
         case 0x8C:
         case 0x84:
+        case 0x94:
             write(src16, Y);
             break;
         // JSR 
@@ -189,8 +219,9 @@ void execute(uint8_t opcode) {
             break;
         // LDA
         case 0xB1: // indirect, y
-            // TODO increment CYC if a page is crossed
-            //      issue: use src16? src8? 
+        case 0xB5:
+        case 0xB9: // absolute, y
+        case 0xBD:
         case 0xAD: // absolute 
         case 0xA5: // zero-page absolute
         case 0xA1: // indexed indirect
@@ -217,6 +248,10 @@ void execute(uint8_t opcode) {
         case 0x85:
         case 0x8D:
         case 0x81:
+        case 0x91:
+        case 0x95:
+        case 0x99:
+        case 0x9D:
             write(src16, A);
             break;
         // BIT
@@ -278,6 +313,10 @@ void execute(uint8_t opcode) {
         // AND
         case 0x2D:
         case 0x25:
+        case 0x31:
+        case 0x35:
+        case 0x39:
+        case 0x3D:
             src8 = read(src16);
         case 0x29:
             A &= src8;
@@ -290,7 +329,11 @@ void execute(uint8_t opcode) {
         // CMP
         case 0xC1:
         case 0xCD:
-        case 0xC5: // zero page
+        case 0xC5:
+        case 0xD1:
+        case 0xD5:
+        case 0xD9:
+        case 0xDD:
             src8 = read(src16);
         case 0xC9:
             tmp = A - src8;
@@ -324,6 +367,10 @@ void execute(uint8_t opcode) {
         case 0x01:
         case 0x05:
         case 0x0D:
+        case 0x11:
+        case 0x15:
+        case 0x19:
+        case 0x1D:
             src8 = read(src16);
         case 0x09:
             A |= src8;
@@ -336,6 +383,10 @@ void execute(uint8_t opcode) {
         // EOR
         case 0x4D:
         case 0x45:
+        case 0x51:
+        case 0x55:
+        case 0x59:
+        case 0x5D:
             src8 = read(src16);
         case 0x49:
             A ^= src8;
@@ -349,6 +400,10 @@ void execute(uint8_t opcode) {
         case 0x61: // indirect, x
         case 0x65: // zero-page 
         case 0x6D:
+        case 0x71:
+        case 0x75:
+        case 0x79:
+        case 0x7D:
            src8 = read(src16); // grab operand and fall-through
         case 0x69: { // immediate
             uint16_t sum = A + src8 + CARRY_SET();
@@ -362,6 +417,10 @@ void execute(uint8_t opcode) {
         case 0xE1:
         case 0xE5:
         case 0xED:
+        case 0xF1:
+        case 0xF5:
+        case 0xF9:
+        case 0xFD:
             src8 = read(src16);
         case 0xE9: { // immediate 
             uint16_t diff = A - src8 - !CARRY_SET();
@@ -373,7 +432,9 @@ void execute(uint8_t opcode) {
         }
         // LDY
         case 0xA4: // zero-page
-        case 0xAc: // absolute
+        case 0xAC: // absolute
+        case 0xB4:
+        case 0xBC:
             src8 = read(src16);
         case 0xA0:
             Y = src8;
@@ -410,6 +471,7 @@ void execute(uint8_t opcode) {
         // INC
         case 0xEE:
         case 0xE6:
+        case 0xF6:
             src8 = (uint8_t)(read(src16) + 1);
             write(src16, src8);
             SET_SIGN_ZERO(src8);
@@ -427,6 +489,7 @@ void execute(uint8_t opcode) {
         // DEC
         case 0xCE:
         case 0xC6:
+        case 0xD6:
             src8 = (uint8_t)(read(src16) - 1);
             write(src16, src8);
             SET_SIGN_ZERO(src8);
@@ -475,6 +538,7 @@ void execute(uint8_t opcode) {
         // LSR
         case 0x46:
         case 0x4E:
+        case 0x56:
             src8 = read(src16);
         case 0x4A:
             SET_CARRY(CHK_BIT(src8, 0)); // todo, think this is right but may need to double check
@@ -486,6 +550,7 @@ void execute(uint8_t opcode) {
         // ASL
         case 0x06:
         case 0x0E:
+        case 0x16:
             src8 = read(src16);
         case 0x0A:
             SET_CARRY(CHK_BIT(src8, 7));
@@ -497,6 +562,7 @@ void execute(uint8_t opcode) {
         // ROR
         case 0x66:
         case 0x6E:
+        case 0x76:
             src8 = read(src16);
         case 0x6A:
             tmp = src8;
@@ -515,6 +581,7 @@ void execute(uint8_t opcode) {
         // ROL
         case 0x26:
         case 0x2E:
+        case 0x36:
             src8 = read(src16);
         case 0x2A:
             tmp = src8;

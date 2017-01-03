@@ -66,6 +66,7 @@ void execute(uint8_t opcode) {
     uint8_t num_args = instr_bytes[opcode] - 1;
     uint8_t mode = instr_modes[opcode];
     uint8_t arg1 = read(PC + 1), arg2 = read(PC + 2);
+    uint16_t base = COMBINE(arg1, arg2);
 
     uint16_t src16 = 0;
     uint8_t src8 = 0, tmp = 0, pc_lo = 0, pc_hi = 0;
@@ -91,15 +92,13 @@ void execute(uint8_t opcode) {
             src16 = COMBINE(arg1, arg2);
             break;
         case ABSOLUTE_X: {
-            uint16_t base = COMBINE(arg1, arg2);
             src16 = base + X;
-            if (UPPER(base) != UPPER(src16)) CYC += 3;
+            // if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
         }
         case ABSOLUTE_Y: {
-            uint16_t base = COMBINE(arg1, arg2);
             src16 = base + Y;
-            if (UPPER(base) != UPPER(src16)) CYC += 3;
+            // if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
         }
         case ACCUMULATOR:
@@ -134,9 +133,10 @@ void execute(uint8_t opcode) {
             break;
         }
         case INDIRECT_INDEXED: {
-            uint16_t base = COMBINE(read(COMBINE(arg1, 0)), read(COMBINE((uint8_t)(arg1+1), 0)));
-            uint16_t addr = base + Y;
-            if (UPPER(base) != UPPER(addr)) CYC += 3;
+            uint16_t indr_base = COMBINE(read(COMBINE(arg1, 0)), read(COMBINE((uint8_t)(arg1+1), 0)));
+            uint16_t addr = indr_base + Y;
+            PAGE_CROSS_CYCLE_INCREMENT(indr_base, addr);
+            // if (UPPER(indr_base) != UPPER(addr)) CYC += 3;
             src16 = addr;
             break;
         }
@@ -163,6 +163,8 @@ void execute(uint8_t opcode) {
             PC = src16;
             break;
         // LDX
+        case 0xBE:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0xB6:
             src8 = read(src16);
         case 0xA2:
@@ -218,10 +220,11 @@ void execute(uint8_t opcode) {
             CLR_BIT(P, 0);
             break;
         // LDA
+        case 0xBD:
+        case 0xB9: // absolute, y
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0xB1: // indirect, y
         case 0xB5:
-        case 0xB9: // absolute, y
-        case 0xBD:
         case 0xAD: // absolute 
         case 0xA5: // zero-page absolute
         case 0xA1: // indexed indirect
@@ -297,6 +300,14 @@ void execute(uint8_t opcode) {
         case 0xF8:
             SET_DECIMAL(1);
             break;
+        // CLI
+        case 0x58: // todo
+            ERROR("CLI not yet implemented!");
+            break;
+        // BRK
+        case 0x00: // todo
+            ERROR("BRK not yet implemented!");
+            break;
         // PHP
         case 0x08:
             // PHP and BRK push the flags with bit 4 true. 
@@ -311,12 +322,13 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // AND
+        case 0x39:
+        case 0x3D:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0x2D:
         case 0x25:
         case 0x31:
         case 0x35:
-        case 0x39:
-        case 0x3D:
             src8 = read(src16);
         case 0x29:
             A &= src8;
@@ -327,13 +339,14 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // CMP
+        case 0xD9:
+        case 0xDD:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0xC1:
         case 0xCD:
         case 0xC5:
         case 0xD1:
         case 0xD5:
-        case 0xD9:
-        case 0xDD:
             src8 = read(src16);
         case 0xC9:
             tmp = A - src8;
@@ -364,13 +377,14 @@ void execute(uint8_t opcode) {
             }
             break;
         // ORA
+        case 0x19:
+        case 0x1D:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0x01:
         case 0x05:
         case 0x0D:
         case 0x11:
         case 0x15:
-        case 0x19:
-        case 0x1D:
             src8 = read(src16);
         case 0x09:
             A |= src8;
@@ -381,12 +395,13 @@ void execute(uint8_t opcode) {
             SET_OVERFLOW(0);
             break;
         // EOR
+        case 0x59:
+        case 0x5D:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0x4D:
         case 0x45:
         case 0x51:
         case 0x55:
-        case 0x59:
-        case 0x5D:
             src8 = read(src16);
         case 0x49:
             A ^= src8;
@@ -397,13 +412,14 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(A);
             break;
         // ADC
+        case 0x7D:
+        case 0x79:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0x61: // indirect, x
         case 0x65: // zero-page 
         case 0x6D:
         case 0x71:
         case 0x75:
-        case 0x79:
-        case 0x7D:
            src8 = read(src16); // grab operand and fall-through
         case 0x69: { // immediate
             uint16_t sum = A + src8 + CARRY_SET();
@@ -414,13 +430,14 @@ void execute(uint8_t opcode) {
             break;
         }
         // SBC
+        case 0xF9:
+        case 0xFD:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0xE1:
         case 0xE5:
         case 0xED:
         case 0xF1:
         case 0xF5:
-        case 0xF9:
-        case 0xFD:
             src8 = read(src16);
         case 0xE9: { // immediate 
             uint16_t diff = A - src8 - !CARRY_SET();
@@ -431,10 +448,11 @@ void execute(uint8_t opcode) {
             break;
         }
         // LDY
+        case 0xBC:
+            PAGE_CROSS_CYCLE_INCREMENT(base, src16);
         case 0xA4: // zero-page
         case 0xAC: // absolute
         case 0xB4:
-        case 0xBC:
             src8 = read(src16);
         case 0xA0:
             Y = src8;
@@ -469,6 +487,7 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(X);
             break;
         // INC
+        case 0xFE:
         case 0xEE:
         case 0xE6:
         case 0xF6:
@@ -487,6 +506,7 @@ void execute(uint8_t opcode) {
             SET_SIGN_ZERO(X);
             break;
         // DEC
+        case 0xDE:
         case 0xCE:
         case 0xC6:
         case 0xD6:
@@ -536,6 +556,7 @@ void execute(uint8_t opcode) {
             PC = COMBINE(pc_lo, pc_hi);
             break;
         // LSR
+        case 0x5E:
         case 0x46:
         case 0x4E:
         case 0x56:
@@ -548,6 +569,7 @@ void execute(uint8_t opcode) {
             else write(src16, src8);
             break;
         // ASL
+        case 0x1E:
         case 0x06:
         case 0x0E:
         case 0x16:
@@ -560,6 +582,7 @@ void execute(uint8_t opcode) {
             else write(src16, src8);
             break;
         // ROR
+        case 0x7E:
         case 0x66:
         case 0x6E:
         case 0x76:
@@ -579,6 +602,7 @@ void execute(uint8_t opcode) {
             else write(src16, src8);
             break;
         // ROL
+        case 0x3E:
         case 0x26:
         case 0x2E:
         case 0x36:

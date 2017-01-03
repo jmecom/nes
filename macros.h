@@ -59,5 +59,8 @@
 /* Increments CYC for branch instructions. Counts PPU cycles (3 per CPU cycle). */
 #define BRANCH_CYCLE_INCREMENT(a) (CYC += UPPER(PC) == UPPER(a) ? 3 : 6)
 
+/* Increments CYC for instructions where crossing a page costs an additional CPU cycle */
+#define PAGE_CROSS_CYCLE_INCREMENT(a, b) (CYC += UPPER(a) == UPPER(b) ? 0 : 3)
+
 /* Indirect, X addressing mode */
 #define INDIRECT_X(lower) (COMBINE(read(COMBINE(lower, 0)), read(COMBINE((uint8_t)(lower+1), 0))))

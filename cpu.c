@@ -112,7 +112,8 @@ void execute(uint8_t opcode) {
             ERROR("Mode not yet implemented");
             break;
         case INDIRECT_INDEXED:
-            ERROR("Mode not yet implemented");
+            src16 = (uint16_t)(COMBINE(read(COMBINE(arg1, 0)), 
+                    read(COMBINE((uint8_t)(arg1+1), 0))) + Y);
             break;
         case RELATIVE:
             src16 = PC + arg1;
@@ -187,6 +188,9 @@ void execute(uint8_t opcode) {
             CLR_BIT(P, 0);
             break;
         // LDA
+        case 0xB1: // indirect, y
+            // TODO increment CYC if a page is crossed
+            //      issue: use src16? src8? 
         case 0xAD: // absolute 
         case 0xA5: // zero-page absolute
         case 0xA1: // indexed indirect

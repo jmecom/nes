@@ -93,12 +93,10 @@ void execute(uint8_t opcode) {
             break;
         case ABSOLUTE_X: {
             src16 = base + X;
-            // if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
         }
         case ABSOLUTE_Y: {
             src16 = base + Y;
-            // if (UPPER(base) != UPPER(src16)) CYC += 3;
             break;
         }
         case ACCUMULATOR:
@@ -136,7 +134,6 @@ void execute(uint8_t opcode) {
             uint16_t indr_base = COMBINE(read(COMBINE(arg1, 0)), read(COMBINE((uint8_t)(arg1+1), 0)));
             uint16_t addr = indr_base + Y;
             PAGE_CROSS_CYCLE_INCREMENT(indr_base, addr);
-            // if (UPPER(indr_base) != UPPER(addr)) CYC += 3;
             src16 = addr;
             break;
         }

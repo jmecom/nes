@@ -115,7 +115,7 @@ void execute(uint8_t opcode) {
         case INDIRECT: {
             pc_lo = read(COMBINE(arg1, arg2));
 
-            if (LOWER(COMBINE(arg1, arg2)) == 0xFF) {
+            if (arg1 == 0xFF) {
                 // The NES has a hardware bug where indirect JMP is handled
                 // incorrectly if the address is of the form $xxFF. 
                 // Instead of incrementing the full 16 bit value, only the lower
@@ -559,7 +559,7 @@ void execute(uint8_t opcode) {
         case 0x56:
             src8 = read(src16);
         case 0x4A:
-            SET_CARRY(CHK_BIT(src8, 0)); // todo, think this is right but may need to double check
+            SET_CARRY(CHK_BIT(src8, 0));
             src8 >>= 1;
             SET_SIGN_ZERO(src8);
             if (mode == ACCUMULATOR) A = src8;

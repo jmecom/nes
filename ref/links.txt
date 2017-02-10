@@ -35,3 +35,24 @@ http://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-impleme
 
 Overview
 http://nesdev.com/NESDoc.pdf
+
+====
+
+PPU 
+http://www.dustmop.io/blog/2015/04/28/nes-graphics-part-1/
+
+to read:
+https://en.wikipedia.org/wiki/Picture_Processing_Unit
+http://wiki.nesdev.com/w/index.php/PPU_scrolling
+http://wiki.nesdev.com/w/index.php/PPU
+http://nesdev.com/NinTech.txt
+nesdev.com/2C02%20technical%20reference.TXT
+https://forums.nesdev.com/viewforum.php?f=3&start=500
+https://forums.nesdev.com/viewtopic.php?f=3&t=10751
+http://wiki.nesdev.com/w/index.php/PPU_rendering
+https://forums.nesdev.com/viewtopic.php?f=3&t=11633
+https://forums.nesdev.com/viewtopic.php?f=3&t=10785
+https://forums.nesdev.com/viewtopic.php?f=3&t=12978
+http://wiki.nesdev.com/w/index.php/PPU_programmer_reference
+https://forums.nesdev.com/viewtopic.php?f=3&t=12605
+https://forums.nesdev.com/viewtopic.php?f=3&t=13143
